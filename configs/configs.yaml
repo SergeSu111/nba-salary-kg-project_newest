@@ -1,0 +1,29 @@
+# 放可变的配置 比如阈值 路径 列名 特征开关等
+paths:
+  data_raw: data/raw
+  training_long: data/processed/training_oncourt.parquet
+  training_clean: data/processed/training_oncourt_clean.parquet
+  training_feat: data/processed/training_oncourt_features.parquet
+  reports_dir: reports
+
+columns:
+  id_col: Player_id
+  group_col: season
+  target: salary_usd
+  drop_text: [Player, Team]     # baseline 中先不喂文本列
+
+filters:
+  min_gp: 10
+  min_min: 8
+
+features:
+  add_ratios: true
+  log_cols: [PTS, REB, AST]     # 如果不存在就跳过
+  clip_outliers: false
+
+train:
+  model: xgb
+  n_estimators: 600
+  learning_rate: 0.05
+  max_depth: 6
+  cv_folds: 5
