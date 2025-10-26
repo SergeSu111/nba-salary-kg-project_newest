@@ -1,0 +1,31 @@
+{
+  "input_path": "data\\processed\\training_oncourt.parquet",
+  "output_path_parquet": "data\\processed\\training_oncourt_clean.parquet",
+  "output_path_csv": "data\\processed\\training_oncourt_clean.csv",
+  "orig_shape": [
+    2082,
+    33
+  ],
+  "final_shape": [
+    2082,
+    32
+  ],
+  "dropped_cols": [
+    "Unnamed: 30"
+  ],
+  "all_na_cols": [
+    "Unnamed: 30"
+  ],
+  "constant_cols": [
+    "Unnamed: 30"
+  ],
+  "high_na_cols(>50%)": [
+    "Unnamed: 30"
+  ],
+  "duplicate_key_count_(Player_id,season)_before_drop": 0,
+  "filters": {
+    "min_gp": 0,
+    "min_min": 0.0
+  },
+  "fill_strategy": "none"
+}
