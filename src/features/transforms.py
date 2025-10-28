@@ -2,6 +2,10 @@
 from __future__ import annotations
 import numpy as np
 import pandas as pd
+# src/features/transforms.py
+
+
+EPS = 1e-9  # 防止除零
 
 EPS = 1e-9  # 防止除零
 
@@ -109,13 +113,6 @@ def finalize_fill(df: pd.DataFrame) -> pd.DataFrame:
     df[num_cols] = df[num_cols].fillna(0)
     return df
 
-
-# src/features/transforms.py
-from __future__ import annotations
-import numpy as np
-import pandas as pd
-
-EPS = 1e-9  # 防止除零
 
 def _safe_div(numer: pd.Series, denom: pd.Series) -> pd.Series:
     return numer / (denom.replace(0, np.nan))  # 先变 NaN，后统一 fillna
