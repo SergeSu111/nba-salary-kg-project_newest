@@ -1,0 +1,6 @@
+split,features,model,target,R2,RMSE
+time-split(2020-23→2024-25),core,RF,log_salary_cap_ratio,0.7360226894753263,0.04073367246695389
+time-split(2020-23→2024-25),core,XGB,log_salary_cap_ratio,0.7232571521786957,0.04170695370413419
+time-split(2020-23→2024-25),core,LGBM,log_salary_cap_ratio,0.7066194224151372,0.04294236378080604
+time-split(2020-23→2024-25),core,MLP,log_salary_cap_ratio,0.5657026752380279,0.05224729903091355
+time-split(2020-23→2024-25),core,Ridge,log_salary_cap_ratio,0.6333548994867595,0.04800574457080126

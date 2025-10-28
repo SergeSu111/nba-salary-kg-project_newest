@@ -238,7 +238,7 @@ def run_block(df: pd.DataFrame,
             "target": target,
             "R2": r2,
             "RMSE": rmse,
-        })
+        })  #fdsf
 
     return pd.DataFrame(rows)
 
