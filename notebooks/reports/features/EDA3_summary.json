@@ -1,0 +1,16 @@
+{
+  "data_path": "..\\data\\processed\\training_oncourt_features.parquet",
+  "rows": 2082,
+  "cols_total": 90,
+  "candidates_total": 82,
+  "auto_best_target": "salary_cap_ratio",
+  "min_abs_corr_to_target": 0.08,
+  "corr_prune_thres_full": 0.95,
+  "full_max_keep": 40,
+  "core_max_keep": 10,
+  "use_xgb": true,
+  "model_target_metrics_csv": "model_target_metrics.csv",
+  "importance_after_corrscreen_csv": "feature_importance_salary_cap_ratio_after_corrscreen.csv",
+  "selected_full_file": "selected_features_full.json",
+  "selected_core_file": "selected_features_core.json"
+}

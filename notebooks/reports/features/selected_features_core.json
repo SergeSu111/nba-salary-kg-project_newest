@@ -1,0 +1,14 @@
+{
+  "features": [
+    "FP",
+    "Age",
+    "Min",
+    "FTA",
+    "TOV",
+    "PTS_per_gp",
+    "log1p_PF",
+    "log1p_3PM",
+    "PTS_per_min",
+    "OREB_per_min"
+  ]
+}
