@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Train baseline models on tabular features (core/full) with a simple hold-out split.
-- Supports: Ridge, RandomForest, XGBoost (if installed), LightGBM (if installed), MLP
+Train baseline models on tabular features (core/full) with a configurable split.
+- Split: random hold-out or time-based (by 'season')
+- Models: Ridge, RF, XGB (if installed), LGBM (if installed), MLP
 - Targets: salary_cap_ratio (default) + others
-- Saves: metrics.csv, residual plots, feature importances, trained models
+- Saves: metrics.csv (per feature set + grand), residual plots, importances, preds, models
 """
-# 把eda4的内容脚本化 
 
 from __future__ import annotations
 import argparse, json, os, sys, warnings, time
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 import numpy as np
 import pandas as pd
+
+# ---- headless plotting (avoid Tk) ----
 import matplotlib
-matplotlib.use("Agg")   # ← 无界面后端，避免 Tkinter
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
@@ -31,7 +33,7 @@ import joblib
 
 warnings.filterwarnings("ignore")
 
-# ---------- Optional libs ----------
+# ----- Optional libs -----
 XGB_OK = True
 try:
     import xgboost as xgb
@@ -77,13 +79,15 @@ def plot_residuals(y_true, y_pred, out_png: Path | None):
     resid = y_true - y_pred
     plt.figure(figsize=(5,4))
     plt.scatter(y_pred, resid, s=8, alpha=0.6)
-    plt.axhline(0, color="gray", linestyle="--")
+    plt.axhline(0, linestyle="--")
     plt.xlabel("Predicted"); plt.ylabel("Residuals"); plt.title("Residuals")
     plt.tight_layout()
     if out_png: plt.savefig(out_png, dpi=160)
     plt.close()
 
 def save_importance(series: pd.Series, out_csv: Path, topk_plot: int = 25):
+    series = series.copy()
+    series.index = series.index.astype(str)  # 避免混入非字符串 index
     series.sort_values(ascending=False).to_csv(out_csv, header=["importance"])
     top = series.sort_values().tail(topk_plot)
     plt.figure(figsize=(6, max(3, 0.3*len(top))))
@@ -92,6 +96,31 @@ def save_importance(series: pd.Series, out_csv: Path, topk_plot: int = 25):
     plt.tight_layout()
     plt.savefig(out_csv.with_suffix(".png"), dpi=160)
     plt.close()
+
+def time_split(
+    df: pd.DataFrame, season_col: str, cutoff_season: int, features: List[str], target: str
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, Dict]:
+    """
+    Train = season < cutoff, Valid = season >= cutoff
+    """
+    assert season_col in df.columns, f"Missing season column '{season_col}'"
+    train_mask = df[season_col] < cutoff_season
+    valid_mask = df[season_col] >= cutoff_season
+
+    X, y = make_xy(df, features, target)
+    Xtr, ytr = X[train_mask], y[train_mask]
+    Xva, yva = X[valid_mask], y[valid_mask]
+
+    meta = {
+        "split": "time",
+        "season_col": season_col,
+        "cutoff": int(cutoff_season),
+        "train_seasons": sorted(df.loc[train_mask, season_col].unique().tolist()),
+        "valid_seasons": sorted(df.loc[valid_mask, season_col].unique().tolist()),
+        "train_size": int(train_mask.sum()),
+        "valid_size": int(valid_mask.sum()),
+    }
+    return Xtr, Xva, ytr, yva, meta
 
 
 # ============== Model trainers ==============
@@ -119,8 +148,9 @@ def fit_rf(Xtr, ytr, Xva, yva):
 def fit_xgb(Xtr, ytr, Xva, yva):
     if not XGB_OK:
         return None, None, None, None
-    dtr = xgb.DMatrix(Xtr, label=ytr)
-    dva = xgb.DMatrix(Xva, label=yva)
+    # DMatrix 会携带列名，get_score 可返回列名级重要性
+    dtr = xgb.DMatrix(Xtr, label=ytr, feature_names=Xtr.columns.tolist())
+    dva = xgb.DMatrix(Xva, label=yva, feature_names=Xva.columns.tolist())
     params = {
         "objective": "reg:squarederror",
         "max_depth": 6,
@@ -134,9 +164,9 @@ def fit_xgb(Xtr, ytr, Xva, yva):
         evals=[(dva, "val")], early_stopping_rounds=30, verbose_eval=False
     )
     pred = booster.predict(dva)
-    # importance (gain)
     score_map = booster.get_score(importance_type="gain")
-    imp = pd.Series({k: score_map.get(k, 0.0) for k in Xtr.columns})
+    # 对齐列名（如果 score_map 缺某些列，补 0）
+    imp = pd.Series({c: score_map.get(c, 0.0) for c in Xtr.columns})
     return "XGB", booster, pred, imp
 
 def fit_lgbm(Xtr, ytr, Xva, yva):
@@ -161,13 +191,11 @@ def fit_mlp(Xtr, ytr, Xva, yva):
     ])
     pipe.fit(Xtr, ytr)
     pred = pipe.predict(Xva)
-    # 用 permutation importance 近似（在验证集上），耗时适中
+    # permutation importance（在验证集上），可能略慢，但特征数<=40 可接受
     pi = permutation_importance(pipe, Xva, yva, n_repeats=10, random_state=42, n_jobs=-1)
     imp = pd.Series(pi.importances_mean, index=Xtr.columns)
     return "MLP", pipe, pred, imp
 
-
-# ============== Runner ==============
 
 MODEL_REGISTRY = {
     "ridge": fit_ridge,
@@ -178,25 +206,24 @@ MODEL_REGISTRY = {
 }
 
 DEFAULT_TARGETS = [
-    "salary_cap_ratio",       # 推荐
-    # 下面这些可按需追加
+    "salary_cap_ratio",       # 推荐 baseline target
     "salary_cap_equiv",
     "log_salary_cap_ratio",
     "salary_usd",
     "log_salary",
 ]
 
-def run_block(df: pd.DataFrame,
-              features: List[str],
-              target: str,
-              models: List[str],
-              test_size: float,
-              random_state: int,
-              out_dir: Path,
-              save_pred: bool = True) -> pd.DataFrame:
 
-    X, y = make_xy(df, features, target)
-    Xtr, Xva, ytr, yva = train_test_split(X, y, test_size=test_size, random_state=random_state)
+# ============== Runner ==============
+
+def run_block(
+    Xtr, Xva, ytr, yva,
+    feature_set_name: str,
+    target: str,
+    models: List[str],
+    out_dir: Path,
+    save_pred: bool = True
+) -> pd.DataFrame:
 
     rows = []
     for m in models:
@@ -209,11 +236,11 @@ def run_block(df: pd.DataFrame,
             continue
 
         r2, rmse = evaluate(yva, pred)
-        print(f"[{name}] target={target}  R^2={r2:.4f}  RMSE={rmse:.6f}")
+        print(f"[{name}] set={feature_set_name}  target={target}  R^2={r2:.4f}  RMSE={rmse:.6f}")
 
         # Save residual plot / importance
-        plot_residuals(yva, pred, out_dir / f"resid_{name}_{target}.png")
-        save_importance(imp, out_dir / f"importance_{name}_{target}.csv")
+        plot_residuals(yva, pred, out_dir / f"resid_{feature_set_name}_{name}_{target}.png")
+        save_importance(imp, out_dir / f"importance_{feature_set_name}_{name}_{target}.csv")
 
         # Save predictions (optional)
         if save_pred:
@@ -221,29 +248,26 @@ def run_block(df: pd.DataFrame,
                 "y_true": yva.values,
                 "y_pred": pred,
             }, index=yva.index)
-            pred_df.to_csv(out_dir / f"pred_{name}_{target}.csv", index=True)
+            pred_df.to_csv(out_dir / f"pred_{feature_set_name}_{name}_{target}.csv", index=True)
 
         # Save model
-        if name in ("Ridge", "RF", "MLP"):
-            joblib.dump(model, out_dir / f"model_{name}_{target}.joblib")
-        elif name == "LGBM":
-            joblib.dump(model, out_dir / f"model_{name}_{target}.joblib")
+        if name in ("Ridge", "RF", "MLP", "LGBM"):
+            joblib.dump(model, out_dir / f"model_{feature_set_name}_{name}_{target}.joblib")
         elif name == "XGB":
-            # xgboost Booster
-            model.save_model(str(out_dir / f"model_{name}_{target}.json"))
+            model.save_model(str(out_dir / f"model_{feature_set_name}_{name}_{target}.json"))
 
         rows.append({
-            "feature_set": out_dir.name,  # 用子目录名标识 core/full
+            "feature_set": feature_set_name,
             "model": name,
             "target": target,
             "R2": r2,
             "RMSE": rmse,
-        })  #fdsf
+        })
 
     return pd.DataFrame(rows)
 
 
-def main():   
+def main():
     ap = argparse.ArgumentParser(description="Train baseline models on selected features.")
     ap.add_argument("--data", default="data/processed/training_oncourt_features.parquet")
     ap.add_argument("--features_core", default="notebooks/reports/features/selected_features_core.json",
@@ -252,15 +276,24 @@ def main():
                     help="Full feature list (json or txt)")
     ap.add_argument("--feature_set", choices=["core","full","both"], default="both",
                     help="Which feature set to train on")
+
+    # --- split options ---
+    ap.add_argument("--split", choices=["random","time"], default="time",
+                    help="random holdout or time-based split")
+    ap.add_argument("--test_size", type=float, default=0.2, help="Hold-out ratio (random split)")
+    ap.add_argument("--random_state", type=int, default=42, help="Random seed")
+    ap.add_argument("--season_col", default="season", help="Season column name for time split")
+    ap.add_argument("--time_cutoff", type=int, default=2024,
+                    help="Time split cutoff (train: season < cutoff; valid: season >= cutoff)")
+
     ap.add_argument("--targets", nargs="+", default=DEFAULT_TARGETS,
-                    help="Targets to run (default: salary_cap_ratio)")
+                    help="Targets to run")
     ap.add_argument("--models", nargs="+", default=["ridge","rf","xgb","lgbm","mlp"],
                     help="Models to run")
-    ap.add_argument("--test_size", type=float, default=0.2, help="Hold-out ratio")
-    ap.add_argument("--random_state", type=int, default=42, help="Random seed")
     ap.add_argument("--outdir", default="notebooks/reports/baseline_cli", help="Output base dir")
     args = ap.parse_args()
 
+    # ---- load data & features ----
     data_path = Path(args.data)
     df = pd.read_parquet(data_path)
 
@@ -271,53 +304,95 @@ def main():
     base_out.mkdir(parents=True, exist_ok=True)
     stamp = now_tag()
 
-    # Decide feature sets
+    # ---- choose feature sets ----
     sets = []
     if args.feature_set in ("core","both"):
         sets.append(("core", core_feats))
     if args.feature_set in ("full","both"):
         sets.append(("full", full_feats))
 
-    # Run
-    all_metrics = []
+    grand_metrics = []  # 所有组的汇总
+
+    # ---- run per feature set ----
     for set_name, feats in sets:
         out_dir = base_out / f"{set_name}_{stamp}"
         out_dir.mkdir(parents=True, exist_ok=True)
-        # Save a manifest
+
+        per_set_metrics = []  # 该组的汇总
+
+        # --- split ---
+        if args.split == "random":
+            # 全量随机切分（注意：random 仅作为对照；正式实验建议用 time）
+            # 这里的 random_state 保证复现
+            # X/y 会在目标循环里生成；为了避免重复构造，先在循环里处理
+            split_meta = {
+                "split": "random",
+                "test_size": args.test_size,
+                "random_state": args.random_state
+            }
+        else:
+            # time split 需要先验证 season 列
+            assert args.season_col in df.columns, f"Missing season column '{args.season_col}' for time split"
+            split_meta = {
+                "split": "time",
+                "season_col": args.season_col,
+                "cutoff": int(args.time_cutoff)
+            }
+
+        # --- manifest（不含目标） ---
         manifest = {
             "data": str(data_path),
             "feature_set": set_name,
             "features_count": len(feats),
+            "features": feats,
             "targets": args.targets,
             "models": args.models,
-            "test_size": args.test_size,
-            "random_state": args.random_state,
+            "split_meta": split_meta,
             "timestamp": stamp,
         }
         (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
 
+        # --- iterate targets ---
         for tgt in args.targets:
             if tgt not in df.columns:
                 print(f"[Warn] Target '{tgt}' not found in df. Skip.")
                 continue
+
+            if args.split == "random":
+                X, y = make_xy(df, feats, tgt)
+                Xtr, Xva, ytr, yva = train_test_split(
+                    X, y, test_size=args.test_size, random_state=args.random_state
+                )
+                # 保存索引，方便复现
+                pd.Index(Xtr.index).to_series().to_csv(out_dir / f"idx_train_{set_name}_{tgt}.csv", index=False)
+                pd.Index(Xva.index).to_series().to_csv(out_dir / f"idx_valid_{set_name}_{tgt}.csv", index=False)
+            else:
+                Xtr, Xva, ytr, yva, meta = time_split(df, args.season_col, args.time_cutoff, feats, tgt)
+                # 写入该目标的 split 详情
+                (out_dir / f"split_{set_name}_{tgt}.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+                pd.Index(Xtr.index).to_series().to_csv(out_dir / f"idx_train_{set_name}_{tgt}.csv", index=False)
+                pd.Index(Xva.index).to_series().to_csv(out_dir / f"idx_valid_{set_name}_{tgt}.csv", index=False)
+
             met = run_block(
-                df=df, features=feats, target=tgt, models=args.models,
-                test_size=args.test_size, random_state=args.random_state,
+                Xtr=Xtr, Xva=Xva, ytr=ytr, yva=yva,
+                feature_set_name=set_name, target=tgt, models=args.models,
                 out_dir=out_dir, save_pred=True
             )
-            all_metrics.append(met)
+            per_set_metrics.append(met)
 
-        # Merge & save metrics for this set
-        if all_metrics:
-            merged = pd.concat(all_metrics, ignore_index=True)
+        # ---- per-set metrics ----
+        if per_set_metrics:
+            merged = pd.concat(per_set_metrics, ignore_index=True)
             merged.to_csv(out_dir / "metrics.csv", index=False)
             print(f"[Saved] {out_dir / 'metrics.csv'}")
+            grand_metrics.append(merged)
 
-    # Also save a grand metrics under base_out for convenience
-    if all_metrics:
-        grand = pd.concat(all_metrics, ignore_index=True)
+    # ---- grand metrics (all sets) ----
+    if grand_metrics:
+        grand = pd.concat(grand_metrics, ignore_index=True)
         grand.to_csv(base_out / f"metrics_{stamp}.csv", index=False)
         print(f"[Saved] {base_out / f'metrics_{stamp}.csv'}")
+
 
 if __name__ == "__main__":
     main()

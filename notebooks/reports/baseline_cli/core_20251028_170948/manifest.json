@@ -1,0 +1,37 @@
+{
+  "data": "data\\processed\\training_oncourt_features.parquet",
+  "feature_set": "core",
+  "features_count": 10,
+  "features": [
+    "FP",
+    "Age",
+    "Min",
+    "FTA",
+    "TOV",
+    "PTS_per_gp",
+    "log1p_PF",
+    "log1p_3PM",
+    "PTS_per_min",
+    "OREB_per_min"
+  ],
+  "targets": [
+    "salary_cap_ratio",
+    "salary_cap_equiv",
+    "log_salary_cap_ratio",
+    "salary_usd",
+    "log_salary"
+  ],
+  "models": [
+    "ridge",
+    "rf",
+    "xgb",
+    "lgbm",
+    "mlp"
+  ],
+  "split_meta": {
+    "split": "time",
+    "season_col": "season",
+    "cutoff": 2024
+  },
+  "timestamp": "20251028_170948"
+}

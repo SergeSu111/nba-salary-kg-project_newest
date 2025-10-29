@@ -1,0 +1,16 @@
+{
+  "split": "time",
+  "season_col": "season",
+  "cutoff": 2024,
+  "train_seasons": [
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "valid_seasons": [
+    2024
+  ],
+  "train_size": 1659,
+  "valid_size": 423
+}
