@@ -1,0 +1,15 @@
+GP
+Min
+PTS
+FP
+PTS_per_min
+FTA
+FTM_per_min
+FGA_per_min
+3PA_per_min
+FG%
+3P%
+FT%
+TS%_calc
+DREB_share
+PF_per_min
