@@ -1,0 +1,77 @@
+{
+  "input_rows": 180,
+  "output_rows": 180,
+  "unique_team_ids": 30,
+  "year_range": [
+    2020,
+    2025
+  ],
+  "columns_out": [
+    "team_id",
+    "team_abbr",
+    "year",
+    "team_value_usd"
+  ],
+  "sample": [
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "year": 2020,
+      "team_value_usd": 1500000000.0
+    },
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "year": 2021,
+      "team_value_usd": 1520000000.0
+    },
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "year": 2022,
+      "team_value_usd": 1975000000.0
+    },
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "year": 2023,
+      "team_value_usd": 3320000000.0
+    },
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "year": 2024,
+      "team_value_usd": 4070000000.0000005
+    },
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "year": 2025,
+      "team_value_usd": 4300000000.0
+    },
+    {
+      "team_id": 2,
+      "team_abbr": "BOS",
+      "year": 2020,
+      "team_value_usd": 3100000000.0
+    },
+    {
+      "team_id": 2,
+      "team_abbr": "BOS",
+      "year": 2021,
+      "team_value_usd": 3200000000.0
+    },
+    {
+      "team_id": 2,
+      "team_abbr": "BOS",
+      "year": 2022,
+      "team_value_usd": 4000000000.0
+    },
+    {
+      "team_id": 2,
+      "team_abbr": "BOS",
+      "year": 2023,
+      "team_value_usd": 4700000000.0
+    }
+  ]
+}
