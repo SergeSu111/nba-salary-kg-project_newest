@@ -1,0 +1,148 @@
+{
+  "raw_rows": 991,
+  "undrafted_detected": 344,
+  "drafted_detected": 647,
+  "drafted_final_rows": 647,
+  "undrafted_final_rows": 344,
+  "intersection_player_ids": 0,
+  "drafted_sample": [
+    {
+      "player_id": 1,
+      "player_name": "Stephen Curry",
+      "team_id": 10,
+      "year": 2009,
+      "draft_team_abbr": "GSW",
+      "round": 1,
+      "round_pick": 7,
+      "overall_pick": 7,
+      "affiliation": "Davidson"
+    },
+    {
+      "player_id": 2,
+      "player_name": "Bradley Beal",
+      "team_id": 30,
+      "year": 2012,
+      "draft_team_abbr": "WAS",
+      "round": 1,
+      "round_pick": 3,
+      "overall_pick": 3,
+      "affiliation": "Florida"
+    },
+    {
+      "player_id": 3,
+      "player_name": "Damian Lillard",
+      "team_id": 25,
+      "year": 2012,
+      "draft_team_abbr": "POR",
+      "round": 1,
+      "round_pick": 6,
+      "overall_pick": 6,
+      "affiliation": "Weber State"
+    },
+    {
+      "player_id": 4,
+      "player_name": "Joel Embiid",
+      "team_id": 23,
+      "year": 2014,
+      "draft_team_abbr": "PHI",
+      "round": 1,
+      "round_pick": 3,
+      "overall_pick": 3,
+      "affiliation": "Kansas"
+    },
+    {
+      "player_id": 5,
+      "player_name": "Giannis Antetokounmpo",
+      "team_id": 17,
+      "year": 2013,
+      "draft_team_abbr": "MIL",
+      "round": 1,
+      "round_pick": 15,
+      "overall_pick": 15,
+      "affiliation": "Basket Zaragoza 2002 (Spain)"
+    },
+    {
+      "player_id": 6,
+      "player_name": "Luka Dončić",
+      "team_id": 1,
+      "year": 2018,
+      "draft_team_abbr": "ATL",
+      "round": 1,
+      "round_pick": 3,
+      "overall_pick": 3,
+      "affiliation": "Real Madrid Baloncesto (Spain)"
+    },
+    {
+      "player_id": 7,
+      "player_name": "Zach LaVine",
+      "team_id": 18,
+      "year": 2014,
+      "draft_team_abbr": "MIN",
+      "round": 1,
+      "round_pick": 13,
+      "overall_pick": 13,
+      "affiliation": "California-Los Angeles"
+    },
+    {
+      "player_id": 8,
+      "player_name": "Zion Williamson",
+      "team_id": 19,
+      "year": 2019,
+      "draft_team_abbr": "NOP",
+      "round": 1,
+      "round_pick": 1,
+      "overall_pick": 1,
+      "affiliation": "Duke"
+    }
+  ],
+  "undrafted_sample": [
+    {
+      "player_id": 19,
+      "player_name": "Karl-Anthony Towns",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 37,
+      "player_name": "Christian Wood",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 46,
+      "player_name": "Fred VanVleet",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 76,
+      "player_name": "Elijah Bryant",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 94,
+      "player_name": "Kendrick Nunn",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 104,
+      "player_name": "Luguentz Dort",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 107,
+      "player_name": "Chris Boucher",
+      "year": null,
+      "affiliation": "Undrafted"
+    },
+    {
+      "player_id": 119,
+      "player_name": "Duncan Robinson",
+      "year": null,
+      "affiliation": "Undrafted"
+    }
+  ]
+}

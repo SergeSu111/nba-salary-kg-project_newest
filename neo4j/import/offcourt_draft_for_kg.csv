@@ -1,0 +1,648 @@
+player_id,player_name,team_id,year,draft_team_abbr,round,round_pick,overall_pick,affiliation
+1,Stephen Curry,10,2009,GSW,1,7,7,Davidson
+2,Bradley Beal,30,2012,WAS,1,3,3,Florida
+3,Damian Lillard,25,2012,POR,1,6,6,Weber State
+4,Joel Embiid,23,2014,PHI,1,3,3,Kansas
+5,Giannis Antetokounmpo,17,2013,MIL,1,15,15,Basket Zaragoza 2002 (Spain)
+6,Luka Dončić,1,2018,ATL,1,3,3,Real Madrid Baloncesto (Spain)
+7,Zach LaVine,18,2014,MIN,1,13,13,California-Los Angeles
+8,Zion Williamson,19,2019,NOP,1,1,1,Duke
+9,Kevin Durant,21,2007,OKC,1,2,2,Texas
+10,Kyrie Irving,6,2011,CLE,1,1,1,Duke
+11,Jayson Tatum,2,2017,BOS,1,3,3,Duke
+12,Donovan Mitchell,8,2017,DEN,1,13,13,Louisville
+13,Nikola Jokić,8,2014,DEN,2,11,41,KK Mega Leks (Serbia)
+14,Devin Booker,24,2015,PHX,1,13,13,Kentucky
+15,Trae Young,7,2018,DAL,1,5,5,Oklahoma
+16,De'Aaron Fox,26,2017,SAC,1,5,5,Kentucky
+17,LeBron James,6,2003,CLE,1,1,1,Saint Vincent-Saint Mary
+18,Kawhi Leonard,12,2011,IND,1,15,15,San Diego State
+20,Jaylen Brown,2,2016,BOS,1,3,3,California
+21,James Harden,21,2009,OKC,1,3,3,Arizona State
+22,Collin Sexton,6,2018,CLE,1,8,8,Alabama
+23,Julius Randle,14,2014,LAL,1,7,7,Kentucky
+24,Brandon Ingram,14,2016,LAL,1,2,2,Duke
+25,Shai Gilgeous-Alexander,4,2018,CHA,1,11,11,Kentucky
+26,Nikola Vučević,23,2011,PHI,1,16,16,Southern California
+27,Paul George,12,2010,IND,1,10,10,Fresno State
+28,CJ McCollum,25,2013,POR,1,10,10,Lehigh
+29,Jerami Grant,23,2014,PHI,2,9,39,Syracuse
+30,Russell Westbrook,21,2008,OKC,1,4,4,California-Los Angeles
+31,Anthony Davis,19,2012,NOP,1,1,1,Kentucky
+32,DeMar DeRozan,28,2009,TOR,1,9,9,Southern California
+33,Jimmy Butler III,5,2011,CHI,1,30,30,Marquette
+34,Pascal Siakam,28,2016,TOR,1,27,27,New Mexico State
+35,Jamal Murray,8,2016,DEN,1,7,7,Kentucky
+36,Malcolm Brogdon,17,2016,MIL,2,6,36,Virginia
+38,John Wall,30,2010,WAS,1,1,1,Kentucky
+39,Terry Rozier,2,2015,BOS,1,16,16,Louisville
+40,Khris Middleton,9,2012,DET,2,9,39,Texas A&M
+41,Domantas Sabonis,21,2016,OKC,1,11,11,Gonzaga
+42,Caris LeVert,12,2016,IND,1,20,20,Michigan
+43,Kristaps Porziņģis,20,2015,NYK,1,4,4,CB Sevilla (Spain)
+44,Victor Oladipo,22,2013,ORL,1,2,2,Indiana
+45,Gordon Hayward,29,2010,UTA,1,9,9,Butler
+47,Malik Beasley,8,2016,DEN,1,19,19,Florida State
+48,Tobias Harris,4,2011,CHA,1,19,19,Tennessee
+49,Anthony Edwards,18,2020,MIN,1,1,1,Georgia
+50,Kemba Walker,4,2011,CHA,1,9,9,Connecticut
+51,Ja Morant,15,2019,MEM,1,2,2,Murray State
+52,Michael Porter Jr.,8,2018,DEN,1,14,14,Missouri
+53,D'Angelo Russell,14,2015,LAL,1,2,2,Ohio State
+54,Bam Adebayo,16,2017,MIA,1,14,14,Kentucky
+55,Norman Powell,17,2015,MIL,2,16,46,California-Los Angeles
+56,Andrew Wiggins,6,2014,CLE,1,1,1,Kansas
+57,Jordan Clarkson,30,2014,WAS,2,16,46,Missouri
+58,Eric Gordon,13,2008,LAC,1,7,7,Indiana
+59,Jrue Holiday,23,2009,PHI,1,17,17,California-Los Angeles
+60,John Collins,1,2017,ATL,1,19,19,Wake Forest
+61,RJ Barrett,20,2019,NYK,1,3,3,Duke
+62,Darius Garland,6,2019,CLE,1,5,5,Vanderbilt
+63,Kyle Lowry,15,2006,MEM,1,24,24,Villanova
+64,Dillon Brooks,11,2017,HOU,2,15,45,Oregon
+65,Evan Fournier,8,2012,DEN,1,20,20,Poitiers Basket 86 (France)
+66,Jonas Valančiūnas,28,2011,TOR,1,5,5,BC Lietuvos rytas (Lithuania)
+67,Bojan Bogdanovic,16,2011,MIA,2,1,31,KK Partizan (Serbia)
+68,Tim Hardaway Jr.,20,2013,NYK,1,24,24,Michigan
+69,Kevin Porter Jr.,17,2019,MIL,1,30,30,Southern California
+70,Buddy Hield,19,2016,NOP,1,6,6,Oklahoma
+71,Chris Paul,19,2005,NOP,1,4,4,Wake Forest
+72,Khyri Thomas,23,2018,PHI,2,8,38,Creighton
+73,Bogdan Bogdanović,24,2014,PHX,1,27,27,KK Partizan (Serbia)
+74,Mike Conley,15,2007,MEM,1,4,4,Ohio State
+75,Harrison Barnes,10,2012,GSW,1,7,7,North Carolina
+77,OG Anunoby,28,2017,TOR,1,23,23,Indiana
+78,LaMelo Ball,4,2020,CHA,1,3,3,Illawarra (Australia)
+79,Dejounte Murray,27,2016,SAS,1,29,29,Washington
+80,Terrence Ross,28,2012,TOR,1,8,8,Washington
+81,T.J. Warren,24,2014,PHX,1,14,14,North Carolina State
+82,Kelly Oubre Jr.,1,2015,ATL,1,15,15,Kansas
+83,Dennis Schröder,1,2013,ATL,1,17,17,Basketball Lowen Braunschweig (Germany)
+84,Derrick White,27,2017,SAS,1,29,29,Colorado
+85,Gary Trent Jr.,26,2018,SAC,2,7,37,Duke
+86,Clint Capela,11,2014,HOU,1,25,25,Elan Chalon (France)
+87,Tyler Herro,16,2019,MIA,1,13,13,Kentucky
+88,Coby White,5,2019,CHI,1,7,7,North Carolina
+89,De'Andre Hunter,14,2019,LAL,1,4,4,Virginia
+90,Andre Drummond,9,2012,DET,1,9,9,Connecticut
+91,Devonte' Graham,1,2018,ATL,2,4,34,Kansas
+92,Derrick Rose,5,2008,CHI,1,1,1,Memphis
+93,Lonzo Ball,14,2017,LAL,1,2,2,California-Los Angeles
+95,Deandre Ayton,24,2018,PHX,1,1,1,Arizona
+96,Jaren Jackson Jr.,15,2018,MEM,1,4,4,Michigan State
+97,Thomas Bryant,29,2017,UTA,2,12,42,Indiana
+98,Rudy Gobert,8,2013,DEN,1,27,27,Cholet Basket (France)
+99,Ben Simmons,23,2016,PHI,1,1,1,Louisiana State
+100,Richaun Holmes,23,2015,PHI,2,7,37,Bowling Green
+101,Al Horford,1,2007,ATL,1,3,3,Florida
+102,Marvin Bagley III,26,2018,SAC,1,2,2,Duke
+103,Joe Harris,6,2014,CLE,2,3,33,Virginia
+105,Rui Hachimura,30,2019,WAS,1,9,9,Gonzaga
+106,Darius Bazley,29,2019,UTA,1,23,23,Princeton
+108,Lauri Markkanen,18,2017,MIN,1,7,7,Arizona
+109,Doug McDermott,8,2014,DEN,1,11,11,Creighton
+110,LaMarcus Aldridge,5,2006,CHI,1,2,2,Texas
+111,Kelly Olynyk,7,2013,DAL,1,13,13,Gonzaga
+112,Montrezl Harrell,11,2015,HOU,2,2,32,Louisville
+113,Mikal Bridges,23,2018,PHI,1,10,10,Villanova
+114,Goran Dragic,27,2008,SAS,2,15,45,KK Olimpija (Slovenia)
+115,Marcus Morris Sr.,11,2011,HOU,1,14,14,Kansas
+116,Carmelo Anthony,8,2003,DEN,1,3,3,Syracuse
+117,Josh Jackson,24,2017,PHX,1,4,4,Kansas
+118,Danilo Gallinari,20,2008,NYK,1,6,6,Olimpia Milano (Italy)
+120,Marcus Smart,2,2014,BOS,1,6,6,Oklahoma State
+121,Tyrese Haliburton,26,2020,SAC,1,12,12,Iowa State
+122,Shake Milton,7,2018,DAL,2,24,54,Southern Methodist
+123,Markelle Fultz,23,2017,PHI,1,1,1,Washington
+124,P.J. Washington,4,2019,CHA,1,12,12,Kentucky
+125,Cole Anthony,22,2020,ORL,1,15,15,North Carolina
+126,Kyle Kuzma,3,2017,BKN,1,27,27,Utah
+127,Jarrett Allen,3,2017,BKN,1,22,22,Texas
+128,Keldon Johnson,27,2019,SAS,1,29,29,Kentucky
+129,Miles Bridges,13,2018,LAC,1,12,12,Michigan State
+130,Alec Burks,29,2011,UTA,1,12,12,Colorado
+131,Will Barton,25,2012,POR,2,10,40,Memphis
+132,Jalen Brunson,7,2018,DAL,2,3,33,Villanova
+133,Myles Turner,12,2015,IND,1,11,11,Texas
+135,Kyle Anderson,27,2014,SAS,1,30,30,California-Los Angeles
+136,Aaron Gordon,22,2014,ORL,1,4,4,Arizona
+137,Brook Lopez,3,2008,BKN,1,10,10,Stanford
+138,Saddiq Bey,3,2020,BKN,1,19,19,Villanova
+139,Eric Bledsoe,21,2010,OKC,1,18,18,Kentucky
+140,Kevin Love,15,2008,MEM,1,5,5,California-Los Angeles
+141,Josh Richardson,16,2015,MIA,2,10,40,Tennessee
+142,Thaddeus Young,23,2007,PHI,1,12,12,Georgia Tech
+144,Jordan Poole,10,2019,GSW,1,28,28,Michigan
+145,Kevin Huerter,1,2018,ATL,1,19,19,Maryland
+146,Malik Monk,4,2017,CHA,1,11,11,Kentucky
+147,Hamidou Diallo,3,2018,BKN,2,15,45,Kentucky
+148,Davis Bertans,12,2011,IND,2,12,42,KK Olimpija (Slovenia)
+149,James Wiseman,10,2020,GSW,1,2,2,Memphis
+150,Jusuf Nurkić,5,2014,CHI,1,16,16,KK Cedevita (Croatia)
+151,Bobby Portis,5,2015,CHI,1,22,22,Arkansas
+152,Immanuel Quickley,21,2020,OKC,1,25,25,Kentucky
+153,Rudy Gay,11,2006,HOU,1,8,8,Connecticut
+154,Lou Williams,23,2005,PHI,2,15,45,South Gwinnett
+156,Cam Reddish,1,2019,ATL,1,10,10,Duke
+157,Wendell Carter Jr.,5,2018,CHI,1,7,7,Duke
+159,Enes Freedom,29,2011,UTA,1,3,3,Kentucky
+161,Lonnie Walker IV,27,2018,SAS,1,18,18,Miami (FL)
+162,Serge Ibaka,21,2008,OKC,1,24,24,CB L'Hospitalet (Spain)
+163,Nickeil Alexander-Walker,3,2019,BKN,1,17,17,Virginia Tech
+164,Jeff Green,2,2007,BOS,1,5,5,Georgetown
+165,Blake Griffin,13,2009,LAC,1,1,1,Oklahoma
+166,Dwayne Bacon,19,2017,NOP,2,10,40,Florida State
+167,Reggie Bullock Jr.,13,2013,LAC,1,25,25,North Carolina
+169,Patty Mills,25,2009,POR,2,25,55,St. Mary's (CA)
+171,Ty Jerome,23,2019,PHI,1,24,24,Virginia
+172,Reggie Jackson,21,2011,OKC,1,24,24,Boston College
+173,Grayson Allen,29,2018,UTA,1,21,21,Duke
+175,Donte DiVincenzo,17,2018,MIL,1,17,17,Villanova
+176,Cedi Osman,18,2015,MIN,2,1,31,Anadolu Efes S.K. (Turkey)
+177,Mason Plumlee,3,2013,BKN,1,22,22,Duke
+178,Brandon Clarke,21,2019,OKC,1,21,21,Gonzaga
+179,Delon Wright,28,2015,TOR,1,20,20,Utah
+180,Monté Morris,8,2017,DEN,2,21,51,Iowa State
+181,Elfrid Payton,23,2014,PHI,1,10,10,Louisiana-Lafayette
+182,Theo Maledon,23,2020,PHI,2,4,34,ASVEL Basket (France)
+183,Jeremy Lamb,11,2012,HOU,1,12,12,Connecticut
+184,Jae Crowder,6,2012,CLE,2,4,34,Marquette
+186,Gary Harris,5,2014,CHI,1,19,19,Michigan State
+188,Frank Jackson,4,2017,CHA,2,1,31,Duke
+189,Kentavious Caldwell-Pope,9,2013,DET,1,8,8,Georgia
+190,Mike Muscala,7,2013,DAL,2,14,44,Bucknell
+191,Otto Porter Jr.,30,2013,WAS,1,3,3,Georgetown
+193,Isaac Okoro,6,2020,CLE,1,5,5,Auburn
+194,Wayne Ellington,18,2009,MIN,1,28,28,North Carolina
+195,Cameron Johnson,18,2019,MIN,1,11,11,North Carolina
+196,Eric Paschall,10,2019,GSW,2,11,41,Villanova
+197,Taurean Prince,29,2016,UTA,1,12,12,Baylor
+198,Danny Green,6,2009,CLE,2,16,46,North Carolina
+199,Trevor Ariza,20,2004,NYK,2,14,43,California-Los Angeles
+200,Cody Zeller,4,2013,CHA,1,4,4,Indiana
+201,Larry Nance Jr.,14,2015,LAL,1,27,27,Wyoming
+202,KJ Martin,26,2020,SAC,2,22,52,IMG Academy
+203,Landry Shamet,23,2018,PHI,1,26,26,Wichita State
+204,Josh Hart,29,2017,UTA,1,30,30,Villanova
+205,Patrick Williams,5,2020,CHI,1,4,4,Florida State
+207,Desmond Bane,2,2020,BOS,1,30,30,Texas Christian
+208,Furkan Korkmaz,23,2016,PHI,1,26,26,Anadolu Efes S.K. (Turkey)
+209,De'Anthony Melton,11,2018,HOU,2,16,46,Southern California
+210,Robin Lopez,24,2008,PHX,1,15,15,Stanford
+211,Ivica Zubac,14,2016,LAL,2,2,32,KK Mega Vizura
+212,Jaylen Nowell,18,2019,MIN,2,13,43,Washington
+213,Talen Horton-Tucker,22,2019,ORL,2,16,46,Iowa State
+214,Paul Millsap,29,2006,UTA,2,17,47,Louisiana Tech
+215,DeMarcus Cousins,26,2010,SAC,1,5,5,Kentucky
+216,Michael Carter-Williams,23,2013,PHI,1,11,11,Syracuse
+217,Bruce Brown,9,2018,DET,2,12,42,Miami (FL)
+219,Jay Scrubb,3,2020,BKN,2,25,55,John A. Logan
+220,Dario Šarić,22,2014,ORL,1,12,12,KK Cibona (Croatia)
+221,Isaiah Roby,9,2019,DET,2,15,45,Nebraska
+223,Raul Neto,1,2013,ATL,2,17,47,San Sebastian Gipuzkoa BC (Spain)
+224,George Hill,27,2008,SAS,1,26,26,IUPUI
+227,Jakob Poeltl,28,2016,TOR,1,9,9,Utah
+228,Ricky Rubio,18,2009,MIN,1,5,5,Joventut Badalona (Spain)
+230,Svi Mykhailiuk,14,2018,LAL,2,17,47,Kansas
+231,Cameron Payne,21,2015,OKC,1,14,14,Murray State
+232,James Ennis III,1,2013,ATL,2,20,50,Long Beach State
+234,Mitchell Robinson,20,2018,NYK,2,6,36,
+235,Luke Kennard,9,2017,DET,1,12,12,Duke
+236,Cory Joseph,27,2011,SAS,1,29,29,Texas
+237,Sterling Brown,23,2017,PHI,2,16,46,Southern Methodist
+238,Aleksej Pokusevski,18,2020,MIN,1,17,17,Olympiacos B.C. (Greece)
+239,Hassan Whiteside,26,2010,SAC,2,3,33,Marshall
+241,Nicolas Batum,11,2008,HOU,1,25,25,Le Mans Sarthe Basket (France)
+242,Robert Williams III,2,2018,BOS,1,27,27,Texas A&M
+243,Tyrese Maxey,23,2020,PHI,1,21,21,Kentucky
+244,Mo Bamba,22,2018,ORL,1,6,6,Texas
+246,Austin Rivers,19,2012,NOP,1,10,10,Duke
+247,Isaiah Stewart,25,2020,POR,1,16,16,Washington
+248,Anfernee Simons,25,2018,POR,1,24,24,IMG Academy
+249,Willy Hernangomez,23,2015,PHI,2,5,35,CB Sevilla (Spain)
+250,Chuma Okeke,22,2019,ORL,1,16,16,Auburn
+251,Payton Pritchard,2,2020,BOS,1,26,26,Oregon
+252,Tomas Satoransky,30,2012,WAS,2,2,32,CB Sevilla (Spain)
+256,D.J. Augustin,4,2008,CHA,1,9,9,Texas
+257,Isaiah Thomas,26,2011,SAC,2,30,60,Washington
+258,Ben McLemore,26,2013,SAC,1,7,7,Kansas
+259,Tristan Thompson,6,2011,CLE,1,4,4,Texas
+261,Steven Adams,21,2013,OKC,1,12,12,Pittsburgh
+262,Edmond Sumner,19,2017,NOP,2,22,52,Xavier
+263,Patrick Beverley,14,2009,LAL,2,12,42,BC Dnipro (Ukraine)
+264,Malachi Flynn,28,2020,TOR,1,29,29,San Diego State
+265,Henry Ellenson,9,2016,DET,1,18,18,Marquette
+266,Jaxson Hayes,1,2019,ATL,1,8,8,Texas
+267,DeAndre Jordan,13,2008,LAC,2,5,35,Texas A&M
+268,JJ Redick,22,2006,ORL,1,11,11,Duke
+269,Jalen Harris,28,2020,TOR,2,29,59,Nevada-Reno
+270,Jalen McDaniels,4,2019,CHA,2,22,52,San Diego
+272,JaVale McGee,30,2008,WAS,1,18,18,Nevada-Reno
+273,James Johnson,5,2009,CHI,1,16,16,Wake Forest
+274,Juancho Hernangomez,8,2016,DEN,1,15,15,Movistar Estudiantes
+275,Justin Jackson,8,2018,DEN,2,13,43,Maryland
+276,Aaron Holiday,12,2018,IND,1,23,23,California-Los Angeles
+279,Tony Bradley,14,2017,LAL,1,28,28,North Carolina
+282,Draymond Green,10,2012,GSW,2,5,35,Michigan State
+283,Terance Mann,13,2019,LAC,2,18,48,Florida State
+284,Daniel Gafford,5,2019,CHI,2,8,38,Arkansas
+285,Ignas Brazdeikis,26,2019,SAC,2,17,47,Michigan
+287,Dwight Howard,22,2004,ORL,1,1,1,Southwest Atlanta Christian Academy
+288,Georges Niang,12,2016,IND,2,20,50,Iowa State
+289,R.J. Hampton,17,2020,MIL,1,24,24,Breakers (New Zealand)
+290,Moritz Wagner,14,2018,LAL,1,25,25,Michigan
+291,Justise Winslow,16,2015,MIA,1,10,10,Duke
+293,Gorgui Dieng,29,2013,UTA,1,21,21,Louisville
+294,Pat Connaughton,3,2015,BKN,2,11,41,Notre Dame
+295,Jaden McDaniels,14,2020,LAL,1,28,28,Washington
+296,Killian Hayes,9,2020,DET,1,7,7,Ratiopharm Ulm (Germany)
+297,Jeff Teague,1,2009,ATL,1,19,19,Wake Forest
+299,Damyean Dotson,20,2017,NYK,2,14,44,Houston
+300,Dennis Smith Jr.,7,2017,DAL,1,9,9,North Carolina State
+301,Markieff Morris,24,2011,PHX,1,13,13,Kansas
+302,Abdel Nader,2,2016,BOS,2,28,58,Iowa State
+303,Spencer Dinwiddie,9,2014,DET,2,8,38,Colorado
+304,Trey Burke,18,2013,MIN,1,9,9,Michigan
+305,Nic Claxton,3,2019,BKN,2,1,31,Georgia
+306,Xavier Tillman,26,2020,SAC,2,5,35,Michigan State
+307,Alex Len,24,2013,PHX,1,5,5,Maryland
+308,Frank Kaminsky,4,2015,CHA,1,9,9,Wisconsin
+309,Denzel Valentine,5,2016,CHI,1,14,14,Michigan State
+311,Nemanja Bjelica,30,2010,WAS,2,5,35,KK Crvena zvezda (Serbia)
+312,Marquese Chriss,24,2016,PHX,1,8,8,Washington
+314,Avery Bradley,2,2010,BOS,1,19,19,Texas
+316,Timothe Luwawu-Cabarrot,23,2016,PHI,1,24,24,KK Mega Vizura
+317,Kira Lewis Jr.,19,2020,NOP,1,13,13,Alabama
+318,Deni Avdija,30,2020,WAS,1,9,9,Maccabi Tel Aviv B.C. (Israel)
+319,Tyus Jones,6,2015,CLE,1,24,24,Duke
+320,Chimezie Metu,17,2018,MIL,2,19,49,Southern California
+321,Frank Mason III,26,2017,SAC,2,4,34,Kansas
+329,Dwight Powell,4,2014,CHA,2,15,45,Stanford
+331,DeAndre' Bembry,1,2016,ATL,1,21,21,Saint Joseph's
+332,Jordan Nwora,17,2020,MIL,2,15,45,Louisville
+338,Saben Lee,29,2020,UTA,2,8,38,Vanderbilt
+341,Jabari Parker,17,2014,MIL,1,2,2,Duke
+344,Devin Vassell,27,2020,SAS,1,11,11,Florida State
+346,Derrick Favors,3,2010,BKN,1,3,3,Georgia Tech
+347,Justin Patton,5,2017,CHI,1,16,16,Creighton
+349,Rajon Rondo,24,2006,PHX,1,21,21,Kentucky
+350,Jarred Vanderbilt,22,2018,ORL,2,11,41,Kentucky
+351,Jahlil Okafor,23,2015,PHI,1,3,3,Duke
+352,Josh Okogie,18,2018,MIN,1,20,20,Georgia Tech
+353,Taj Gibson,5,2009,CHI,1,26,26,Southern California
+354,Tony Snell,5,2013,CHI,1,20,20,New Mexico
+355,Jarrett Culver,24,2019,PHX,1,6,6,Texas Tech
+356,Willie Cauley-Stein,26,2015,SAC,1,6,6,Kentucky
+357,Glenn Robinson III,18,2014,MIN,2,10,40,Michigan
+359,Maurice Harkless,23,2012,PHI,1,15,15,St. John's (NY)
+360,D.J. Wilson,17,2017,MIL,1,17,17,Michigan
+361,Alize Johnson,12,2018,IND,2,20,50,Missouri State
+362,Dylan Windler,6,2019,CLE,1,26,26,Belmont
+363,Patrick Patterson,11,2010,HOU,1,14,14,Kentucky
+364,Goga Bitadze,12,2019,IND,1,18,18,KK Mega Leks (Serbia)
+365,Jake Layman,22,2016,ORL,2,17,47,Maryland
+366,Isaiah Hartenstein,11,2017,HOU,2,13,43,BC Zalgiris (Lithuania)
+367,Sekou Doumbouya,9,2019,DET,1,15,15,Limoges CSP (France)
+368,Nerlens Noel,19,2013,NOP,1,6,6,Kentucky
+369,Marc Gasol,14,2007,LAL,2,18,48,CB Sant Josep (Spain)
+371,Bismack Biyombo,26,2011,SAC,1,7,7,Baloncesto Fuenlabrada (Spain)
+372,Trey Lyles,29,2015,UTA,1,12,12,Kentucky
+373,Precious Achiuwa,16,2020,MIA,1,20,20,Memphis
+375,E'Twaun Moore,2,2011,BOS,2,25,55,Purdue
+376,Jerome Robinson,13,2018,LAC,1,13,13,Boston College
+382,Aaron Nesmith,2,2020,BOS,1,14,14,Vanderbilt
+383,Troy Brown Jr.,30,2018,WAS,1,15,15,Oregon
+385,Damian Jones,10,2016,GSW,1,30,30,Vanderbilt
+386,Grant Williams,2,2019,BOS,1,22,22,Tennessee
+387,Semi Ojeleye,2,2017,BOS,2,7,37,Southern Methodist
+389,Nassir Little,25,2019,POR,1,25,25,North Carolina
+390,Onyeka Okongwu,1,2020,ATL,1,6,6,Southern California
+392,Rodney Hood,29,2014,UTA,1,23,23,Duke
+393,Solomon Hill,12,2013,IND,1,23,23,Arizona
+395,Al-Farouq Aminu,13,2010,LAC,1,8,8,Wake Forest
+396,Stanley Johnson,9,2015,DET,1,8,8,Arizona
+397,Andre Iguodala,23,2004,PHI,1,9,9,Arizona
+399,Chandler Hutchison,5,2018,CHI,1,22,22,Boise State
+402,Mike Scott,1,2012,ATL,2,13,43,Virginia
+403,Jevon Carter,15,2018,MEM,2,2,32,West Virginia
+405,Kevon Looney,10,2015,GSW,1,30,30,California-Los Angeles
+407,Nico Mannion,10,2020,GSW,2,18,48,Arizona
+410,Obi Toppin,20,2020,NYK,1,8,8,Dayton
+411,Darius Miller,19,2012,NOP,2,16,46,Kentucky
+413,Jordan Bone,19,2019,NOP,2,27,57,Tennessee
+415,Cody Martin,4,2019,CHA,2,6,36,North Carolina State
+416,Carsen Edwards,23,2019,PHI,2,3,33,Purdue
+417,Matisse Thybulle,2,2019,BOS,1,20,20,Washington
+419,Kevin Knox II,20,2018,NYK,1,9,9,Kentucky
+420,Justin James,26,2019,SAC,2,10,40,Wyoming
+421,Danté Exum,29,2014,UTA,1,5,5,Australian Institute of Sport (Australia)
+422,Ersan Ilyasova,17,2005,MIL,2,6,36,Ulkerspor (Turkey)
+423,Tremont Waters,2,2019,BOS,2,21,51,Louisiana State
+425,Skylar Mays,1,2020,ATL,2,20,50,Louisiana State
+426,Thon Maker,17,2016,MIL,1,10,10,
+427,Isaiah Joe,23,2020,PHI,2,19,49,Arkansas
+428,P.J. Tucker,28,2006,TOR,2,5,35,Texas
+429,Luka Samanic,27,2019,SAS,1,19,19,KK Olimpija (Slovenia)
+433,Paul Reed,23,2020,PHI,2,28,58,DePaul
+434,Meyers Leonard,25,2012,POR,1,11,11,Illinois
+436,Zeke Nnaji,8,2020,DEN,1,22,22,Arizona
+441,Romeo Langford,2,2019,BOS,1,14,14,Indiana
+445,Jahmi'us Ramsey,26,2020,SAC,2,13,43,Texas Tech
+448,Reggie Perry,13,2020,LAC,2,27,57,Mississippi State
+450,Sam Merrill,19,2020,NOP,2,30,60,Utah State
+452,Thanasis Antetokounmpo,20,2014,NYK,2,21,51,Delaware 87ers (D-League)
+453,Harry Giles III,25,2017,POR,1,20,20,Duke
+455,Bruno Caboclo,28,2014,TOR,1,20,20,Esporte Clube Pinheiros (Brazil)
+456,Kyle Guy,20,2019,NYK,2,25,55,Virginia
+458,Frank Ntilikina,20,2017,NYK,1,8,8,SIG Strasbourg (France)
+459,Didi Louzada,1,2019,ATL,2,5,35,Sesi Franca (Brazil)
+460,Keita Bates-Diop,18,2018,MIN,2,18,48,Ohio State
+462,Anderson Varejao,22,2004,ORL,2,1,30,FC Barcelona Basquet (Spain)
+463,Josh Green,7,2020,DAL,1,18,18,Arizona
+464,Grant Riller,4,2020,CHA,2,26,56,College of Charleston
+465,Tre Jones,27,2020,SAS,2,11,41,Duke
+467,Jordan Bell,5,2017,CHI,2,8,38,Oregon
+468,KZ Okpala,24,2019,PHX,2,2,32,Stanford
+470,Rondae Hollis-Jefferson,25,2015,POR,1,23,23,Arizona
+472,Mfiondu Kabengele,3,2019,BKN,1,27,27,Florida State
+474,Vernon Carey Jr.,4,2020,CHA,2,2,32,Duke
+475,Wes Iwundu,22,2017,ORL,2,3,33,Kansas State
+477,Quinndary Weatherspoon,27,2019,SAS,2,19,49,Mississippi State
+478,Jarrell Brantley,12,2019,IND,2,20,50,College of Charleston
+479,CJ Elleby,25,2020,POR,2,16,46,Washington State
+481,Bol Bol,16,2019,MIA,2,14,44,Oregon
+485,Ed Davis,28,2010,TOR,1,13,13,North Carolina
+486,Vlatko Čančar,8,2017,DEN,2,19,49,KK Mega Leks (Serbia)
+487,Deividas Sirvydis,7,2019,DAL,2,7,37,BC Lietuvos rytas (Lithuania)
+489,Ray Spalding,23,2018,PHI,2,26,56,Louisville
+490,Jalen Smith,24,2020,PHX,1,10,10,Maryland
+492,Sindarius Thornwell,17,2017,MIL,2,18,48,South Carolina
+494,Isaac Bonga,23,2018,PHI,2,9,39,Fraport Skyliners (Germany)
+495,Miye Oni,10,2019,GSW,2,28,58,Yale
+496,Alen Smailagic,19,2019,NOP,2,9,39,Santa Cruz (G League)
+497,Cassius Winston,21,2020,OKC,2,23,53,Michigan State
+498,Daniel Oturu,18,2020,MIN,2,3,33,Minnesota
+500,Elijah Hughes,19,2020,NOP,2,9,39,Syracuse
+501,T.J. Leaf,12,2017,IND,1,18,18,California-Los Angeles
+505,Bruno Fernando,23,2019,PHI,2,4,34,Maryland
+507,Robert Woodard II,15,2020,MEM,2,10,40,Mississippi State
+508,Cassius Stanley,12,2020,IND,2,24,54,Duke
+509,Rodions Kurucs,3,2018,BKN,2,10,40,FC Barcelona Basquet (Spain)
+513,Kris Dunn,18,2016,MIN,1,5,5,Providence
+515,Andre Roberson,18,2013,MIN,1,26,26,Colorado
+519,Udoka Azubuike,29,2020,UTA,1,27,27,Kansas
+520,Iman Shumpert,20,2011,NYK,1,17,17,Georgia Tech
+522,Patrick McCaw,10,2016,GSW,2,8,38,Nevada-Las Vegas
+523,Tyler Bey,23,2020,PHI,2,6,36,Colorado
+524,Tyrell Terry,7,2020,DAL,2,1,31,Stanford
+525,Nick Richards,19,2020,NOP,2,12,42,Kentucky
+526,Kostas Antetokounmpo,23,2018,PHI,2,30,60,Dayton
+531,Jared Dudley,4,2007,CHA,1,22,22,Boston College
+534,Terrance Ferguson,21,2017,OKC,1,21,21,Adelaide 36ers (Australia)
+536,Anžejs Pasečņiks,22,2017,ORL,1,25,25,CB Gran Canaria (Spain)
+539,Noah Vonleh,4,2014,CHA,1,9,9,Indiana
+541,Klay Thompson,10,2011,GSW,1,11,11,Washington State
+542,Cade Cunningham,9,2021,DET,1,1,1,Oklahoma State
+543,Jalen Green,11,2021,HOU,1,2,2,Ignite (G League)
+544,Scottie Barnes,28,2021,TOR,1,4,4,Florida State
+545,Franz Wagner,22,2021,ORL,1,8,8,Michigan
+546,Evan Mobley,6,2021,CLE,1,3,3,Southern California
+547,Chris Duarte,12,2021,IND,1,13,13,Oregon
+549,Josh Giddey,21,2021,OKC,1,6,6,NBA Global Academy (Australia)
+550,Jalen Suggs,22,2021,ORL,1,5,5,Gonzaga
+551,Davion Mitchell,26,2021,SAC,1,9,9,Baylor
+553,Melvin Frazier Jr.,22,2018,ORL,2,5,35,Tulane
+554,Tre Mann,21,2021,OKC,1,18,18,Florida
+555,Bones Hyland,8,2021,DEN,1,26,26,Virginia Commonwealth
+558,Alperen Sengun,21,2021,OKC,1,16,16,Besiktas (Turkey)
+559,Herbert Jones,19,2021,NOP,2,5,35,Alabama
+560,Jonathan Kuminga,10,2021,GSW,1,7,7,Ignite (G League)
+561,Ayo Dosunmu,5,2021,CHI,2,8,38,Illinois
+562,Cam Thomas,3,2021,BKN,1,27,27,Louisiana State
+563,Lance Stephenson,12,2010,IND,2,10,40,Cincinnati
+564,Aaron Wiggins,21,2021,OKC,2,25,55,Maryland
+565,Isaiah Jackson,14,2021,LAL,1,22,22,Kentucky
+566,Corey Kispert,30,2021,WAS,1,15,15,Gonzaga
+567,Ziaire Williams,19,2021,NOP,1,10,10,Stanford
+570,Josh Christopher,11,2021,HOU,1,24,24,Arizona State
+571,Zach Collins,26,2017,SAC,1,10,10,Gonzaga
+573,Jeremiah Robinson-Earl,20,2021,NYK,2,2,32,Villanova
+575,Keon Johnson,20,2021,NYK,1,21,21,Tennessee
+578,Brandon Boston,15,2021,MEM,2,21,51,Kentucky
+579,Georgios Kalaitzakis,12,2021,IND,2,30,60,BC Nevezis (Greece)
+581,Brandon Knight,9,2011,DET,1,8,8,Kentucky
+582,Justin Anderson,7,2015,DAL,1,21,21,Virginia
+583,Isaiah Livers,9,2021,DET,2,12,42,Michigan
+586,Vít Krejčí,30,2020,WAS,2,7,37,Basket Zaragoza 2002 (Spain)
+588,Day'Ron Sharpe,24,2021,PHX,1,29,29,North Carolina
+590,Quentin Grimes,13,2021,LAC,1,25,25,Houston
+591,Kessler Edwards,3,2021,BKN,2,14,44,Pepperdine
+592,Luka Garza,9,2021,DET,2,22,52,Iowa
+594,Joshua Primo,27,2021,SAS,1,12,12,Alabama
+596,Greg Monroe,9,2010,DET,1,7,7,Georgetown
+597,Trey Murphy III,15,2021,MEM,1,17,17,Virginia
+601,Greg Brown III,19,2021,NOP,2,13,43,Texas
+603,James Bouknight,4,2021,CHA,1,11,11,Connecticut
+604,Moses Moody,10,2021,GSW,1,14,14,Arkansas
+605,Davon Reed,24,2017,PHX,2,2,32,Miami (FL)
+608,Santi Aldama,29,2021,UTA,1,30,30,Loyola-Maryland
+614,Admiral Schofield,23,2019,PHI,2,12,42,Tennessee
+615,Jared Butler,26,2021,SAC,2,10,40,Baylor
+617,Sandro Mamukelashvili,12,2021,IND,2,24,54,Seton Hall
+618,Cheick Diallo,13,2016,LAC,2,3,33,Kansas
+621,Dalano Banton,28,2021,TOR,2,16,46,Nebraska
+622,Charles Bassey,23,2021,PHI,2,23,53,Western Kentucky
+625,Neemias Queta,26,2021,SAC,2,9,39,Utah State
+628,Tyrone Wallace,29,2016,UTA,2,30,60,California
+632,Jalen Johnson,1,2021,ATL,1,20,20,Duke
+635,Nik Stauskas,26,2014,SAC,1,8,8,Michigan
+636,Miles McBride,21,2021,OKC,2,6,36,West Virginia
+637,Jericho Sims,20,2021,NYK,2,28,58,Texas
+639,Joe Wieskamp,27,2021,SAS,2,11,41,Iowa
+640,JT Thor,9,2021,DET,2,7,37,Auburn
+644,Joe Johnson,2,2001,BOS,1,10,10,Arkansas
+645,Usman Garuba,11,2021,HOU,1,23,23,Madrid (ESP)
+646,Marko Simonovic,5,2020,CHI,2,14,44,KK Mega Leks (Serbia)
+648,Isaiah Todd,17,2021,MIL,2,1,31,Ignite (G League)
+651,Emmanuel Mudiay,8,2015,DEN,1,7,7,Guangdong Southern Tigers (China)
+653,Leandro Bolmaro,20,2020,NYK,1,23,23,FC Barcelona Basquet (Spain)
+654,Darren Collison,19,2009,NOP,1,21,21,California-Los Angeles
+660,Petr Cornelie,8,2016,DEN,2,23,53,Le Mans Sarthe Basket (France)
+662,Kai Jones,20,2021,NYK,1,19,19,Texas
+663,Jaden Springer,23,2021,PHI,1,28,28,Tennessee
+670,Sharife Cooper,1,2021,ATL,2,18,48,Auburn
+671,Scottie Lewis,4,2021,CHA,2,26,56,Florida
+674,George King,24,2018,PHX,2,29,59,Colorado
+676,Arnoldas Kulboka,4,2018,CHA,2,25,55,Brose Bamberg (Germany)
+677,CJ Miles,29,2005,UTA,2,4,34,Skyline
+679,David Johnson,28,2021,TOR,2,17,47,Louisville
+692,Sam Dekker,11,2015,HOU,1,18,18,Wisconsin
+696,Paolo Banchero,22,2022,ORL,1,1,1,Duke
+697,Bennedict Mathurin,12,2022,IND,1,6,6,Arizona
+698,Jaden Ivey,9,2022,DET,1,5,5,Purdue
+699,RaiQuan Gray,3,2021,BKN,2,29,59,Florida State
+700,Jalen Williams,21,2022,OKC,1,12,12,Santa Clara
+701,Jabari Smith Jr.,11,2022,HOU,1,3,3,Auburn
+702,Keegan Murray,26,2022,SAC,1,4,4,Iowa
+703,Jeremy Sochan,27,2022,SAS,1,9,9,Baylor
+705,Malaki Branham,27,2022,SAS,1,20,20,Ohio State
+706,Shaedon Sharpe,25,2022,POR,1,7,7,Kentucky
+708,Andrew Nembhard,12,2022,IND,2,1,31,Gonzaga
+709,Tari Eason,11,2022,HOU,1,17,17,Louisiana State
+710,Walker Kessler,15,2022,MEM,1,22,22,Auburn
+711,Jalen Duren,4,2022,CHA,1,13,13,Memphis
+712,Mark Williams,4,2022,CHA,1,15,15,Duke
+713,AJ Griffin,1,2022,ATL,1,16,16,Duke
+714,Jaden Hardy,26,2022,SAC,2,7,37,Ignite (G League)
+715,Ochai Agbaji,6,2022,CLE,1,14,14,Kansas
+717,David Roddy,23,2022,PHI,1,23,23,Colorado State
+720,Jaylin Williams,21,2022,OKC,2,4,34,Arkansas
+721,Johnny Davis,30,2022,WAS,1,10,10,Wisconsin
+722,Nikola Jović,16,2022,MIA,1,27,27,KK Mega Leks (Serbia)
+724,Bryce McGowens,18,2022,MIN,2,10,40,Nebraska
+725,MarJon Beauchamp,17,2022,MIL,1,24,24,Ignite (G League)
+726,Jonathan Isaac,22,2017,ORL,1,6,6,Florida State
+728,Blake Wesley,27,2022,SAS,1,25,25,Notre Dame
+729,Ousmane Dieng,20,2022,NYK,1,11,11,Breakers (New Zealand)
+731,Christian Braun,8,2022,DEN,1,21,21,Kansas
+732,TyTy Washington Jr.,15,2022,MEM,1,29,29,Kentucky
+736,Patrick Baldwin Jr.,10,2022,GSW,1,28,28,Wisconsin-Milwaukee
+738,Jabari Walker,25,2022,POR,2,27,57,Colorado
+739,Dyson Daniels,19,2022,NOP,1,8,8,Ignite (G League)
+741,Caleb Houstan,22,2022,ORL,2,2,32,Michigan
+745,Peyton Watson,21,2022,OKC,1,30,30,California-Los Angeles
+747,Christian Koloko,28,2022,TOR,2,3,33,Arizona
+748,Max Christie,14,2022,LAL,2,5,35,Michigan State
+750,Josh Minott,4,2022,CHA,2,15,45,Memphis
+752,Jake LaRavia,18,2022,MIN,1,19,19,Wake Forest
+754,Tyler Dorsey,1,2017,ATL,2,11,41,Oregon
+756,Jason Preston,22,2021,ORL,2,3,33,Ohio
+757,Moussa Diabaté,13,2022,LAC,2,13,43,Michigan
+758,Isaiah Mobley,6,2022,CLE,2,19,49,Southern California
+762,Dalen Terry,5,2022,CHI,1,18,18,Arizona State
+764,Kennedy Chandler,27,2022,SAS,2,8,38,Tennessee
+767,Vince Williams Jr.,15,2022,MEM,2,17,47,Virginia Commonwealth
+768,Ryan Rollins,1,2022,ATL,2,14,44,Toledo
+771,JD Davison,2,2022,BOS,2,23,53,Alabama
+772,Kendall Brown,18,2022,MIN,2,18,48,Baylor
+774,Wendell Moore Jr.,7,2022,DAL,1,26,26,Duke
+775,Tyrese Martin,10,2022,GSW,2,21,51,Connecticut
+780,Trevor Keels,20,2022,NYK,2,12,42,Duke
+785,Victor Wembanyama,27,2023,SAS,1,1,1,Metropolitans 92 (France)
+786,Brandon Miller,4,2023,CHA,1,2,2,Alabama
+787,Chet Holmgren,21,2022,OKC,1,2,2,Gonzaga
+788,GG Jackson,15,2023,MEM,2,15,45,South Carolina
+789,Scoot Henderson,25,2023,POR,1,3,3,Ignite (G League)
+790,Keyonte George,29,2023,UTA,1,16,16,Baylor
+791,Cam Whitmore,11,2023,HOU,1,20,20,Villanova
+792,Jaime Jaquez Jr.,16,2023,MIA,1,18,18,California-Los Angeles
+793,Amen Thompson,11,2023,HOU,1,4,4,Overtime Elite
+794,Brandin Podziemski,10,2023,GSW,1,19,19,Santa Clara
+796,Ausar Thompson,9,2023,DET,1,5,5,Overtime Elite
+797,Dereck Lively II,21,2023,OKC,1,12,12,Duke
+798,Gradey Dick,28,2023,TOR,1,13,13,Kansas
+799,Tristan Vukcevic,30,2023,WAS,2,12,42,Real Madrid Baloncesto (Spain)
+800,Bilal Coulibaly,12,2023,IND,1,7,7,Metropolitans 92 (France)
+801,Marcus Sasser,15,2023,MEM,1,25,25,Houston
+802,Trayce Jackson-Davis,30,2023,WAS,2,27,57,Indiana
+803,Jordan Hawkins,19,2023,NOP,1,14,14,Connecticut
+804,Brice Sensabaugh,29,2023,UTA,1,28,28,Ohio State
+805,Toumani Camara,24,2023,PHX,2,22,52,Dayton
+806,Taylor Hendricks,29,2023,UTA,1,9,9,Central Florida
+807,Vasilije Micic,23,2014,PHI,2,22,52,KK Mega Leks (Serbia)
+810,Cason Wallace,7,2023,DAL,1,10,10,Kentucky
+812,Kris Murray,25,2023,POR,1,23,23,Iowa
+814,Nick Smith Jr.,4,2023,CHA,1,27,27,Arkansas
+815,Noah Clowney,3,2023,BKN,1,21,21,Alabama
+819,Sasha Vezenkov,3,2017,BKN,2,27,57,FC Barcelona Basquet (Spain)
+820,Jalen Wilson,3,2023,BKN,2,21,51,Kansas
+821,Kobe Bufkin,1,2023,ATL,1,15,15,Michigan
+822,Anthony Black,22,2023,ORL,1,6,6,Arkansas
+823,Julian Strawther,12,2023,IND,1,29,29,Gonzaga
+825,Ben Sheppard,12,2023,IND,1,26,26,Belmont
+829,Mouhamed Gueye,4,2023,CHA,2,9,39,Washington State
+830,Rayan Rupert,25,2023,POR,2,13,43,Breakers (New Zealand)
+832,Sidy Cissoko,27,2023,SAS,2,14,44,Ignite (G League)
+834,Jarace Walker,30,2023,WAS,1,8,8,Houston
+836,Gui Santos,10,2022,GSW,2,25,55,Associacao Atletica Ponte Preta (Brazil)
+840,Olivier-Maxence Prosper,26,2023,SAC,1,24,24,Marquette
+843,Emoni Bates,6,2023,CLE,2,19,49,Eastern Michigan
+849,Amari Bailey,4,2023,CHA,2,11,41,California-Los Angeles
+850,Julian Phillips,2,2023,BOS,2,5,35,Tennessee
+851,Andre Jackson Jr.,22,2023,ORL,2,6,36,Connecticut
+852,Colby Jones,4,2023,CHA,2,4,34,Xavier
+853,Kobe Brown,13,2023,LAC,1,30,30,Missouri
+855,Isaiah Wong,12,2023,IND,2,25,55,Miami (FL)
+858,Leonard Miller,27,2023,SAS,2,3,33,Ignite (G League)
+859,Jordan Walsh,26,2023,SAC,2,8,38,Arkansas
+860,Jordan Miller,13,2023,LAC,2,18,48,Miami (FL)
+861,Jalen Hood-Schifino,14,2023,LAL,1,17,17,Indiana
+862,Jett Howard,22,2023,ORL,1,11,11,Michigan
+863,Jalen Pickett,12,2023,IND,2,2,32,Penn State
+864,Seth Lundy,1,2023,ATL,2,16,46,Penn State
+868,Dariq Whitehead,3,2023,BKN,1,22,22,Duke
+872,Chris Livingston,17,2023,MIL,2,28,58,Kentucky
+873,Keyontae Johnson,21,2023,OKC,2,20,50,Kansas State
+874,Hunter Tyson,21,2023,OKC,2,7,37,Clemson
+875,Filip Petrusev,23,2021,PHI,2,20,50,KK Mega Leks (Serbia)
+876,Jalen Slawson,26,2023,SAC,2,24,54,Furman
+878,E.J. Liddell,19,2022,NOP,2,11,41,Ohio State
+880,Maxwell Lewis,8,2023,DEN,2,10,40,Pepperdine
+886,Jared McCain,23,2024,PHI,1,16,16,Duke
+887,Stephon Castle,27,2024,SAS,1,4,4,Connecticut
+889,Alex Sarr,30,2024,WAS,1,2,2,Perth Wildcats (Australia)
+890,Zaccharie Risacher,1,2024,ATL,1,1,1,JL Bourg (France)
+892,Guerschon Yabusele,2,2016,BOS,1,16,16,SPO Rouen Basket
+893,Jaylen Wells,15,2024,MEM,2,9,39,Washington State
+896,Bub Carrington,25,2024,POR,1,14,14,Pittsburgh
+897,Kyle Filipowski,29,2024,UTA,2,2,32,Duke
+898,Kel'el Ware,16,2024,MIA,1,15,15,Indiana
+899,Zach Edey,15,2024,MEM,1,9,9,Purdue
+900,Yves Missi,19,2024,NOP,1,21,21,Baylor
+901,Dalton Knecht,14,2024,LAL,1,17,17,Tennessee
+902,Kyshawn George,20,2024,NYK,1,24,24,Miami (FL)
+903,Isaiah Collier,29,2024,UTA,1,29,29,Southern California
+904,Ja'Kobe Walter,28,2024,TOR,1,19,19,Baylor
+905,Matas Buzelis,5,2024,CHI,1,11,11,Ignite (G League)
+906,Quinten Post,10,2024,GSW,2,22,52,Boston College
+908,KJ Simpson,4,2024,CHA,2,12,42,Colorado
+909,Karlo Matković,19,2022,NOP,2,22,52,Mega Mozzart (Serbia)
+910,AJ Johnson,17,2024,MIL,1,23,23,Illawarra (Australia)
+912,Tristan da Silva,22,2024,ORL,1,18,18,Colorado
+915,Jamal Shead,26,2024,SAC,2,15,45,Houston
+918,Antonio Reeves,22,2024,ORL,2,17,47,Kentucky
+919,Ryan Dunn,8,2024,DEN,1,28,28,Virginia
+921,Donovan Clingan,25,2024,POR,1,7,7,Connecticut
+922,Ajay Mitchell,20,2024,NYK,2,8,38,California-Santa Barbara
+923,Ronald Holland II,9,2024,DET,1,5,5,Ignite (G League)
+924,Jonathan Mogbo,28,2024,TOR,2,1,31,San Francisco
+926,Tidjane Salaün,4,2024,CHA,1,6,6,Cholet Basket (France)
+927,Adem Bona,23,2024,PHI,2,11,41,California-Los Angeles
+931,Cody Williams,29,2024,UTA,1,10,10,Colorado
+932,Pelle Larsson,11,2024,HOU,2,14,44,Arizona
+933,Rob Dillingham,27,2024,SAS,1,8,8,Kentucky
+934,Reed Sheppard,11,2024,HOU,1,3,3,Kentucky
+935,Terrence Shannon Jr.,18,2024,MIN,1,27,27,Illinois
+936,Cam Spencer,9,2024,DET,2,23,53,Connecticut
+937,Oso Ighodaro,25,2024,POR,2,10,40,Marquette
+938,Jaylen Clark,18,2023,MIN,2,23,53,California-Los Angeles
+939,Devin Carter,26,2024,SAC,1,13,13,Providence
+942,Baylor Scheierman,2,2024,BOS,1,30,30,Creighton
+943,Jaylon Tyson,6,2024,CLE,1,20,20,California
+947,Tyler Smith,17,2024,MIL,2,3,33,Ignite (G League)
+951,Dillon Jones,30,2024,WAS,1,26,26,Weber State
+953,Bronny James,14,2024,LAL,2,25,55,Southern California
+954,Enrique Freeman,12,2024,IND,2,20,50,Akron
+955,Johnny Furphy,27,2024,SAS,2,5,35,Kansas
+956,Tyler Kolek,25,2024,POR,2,4,34,Marquette
+957,Ariel Hukporti,7,2024,DAL,2,28,58,MHP Riesen (Germany)
+958,Bobi Klintman,18,2024,MIN,2,7,37,Cairns Taipans (Australia)
+964,Pacôme Dadiet,20,2024,NYK,1,25,25,Ratiopharm Ulm (Germany)
+970,Kevin McCullar Jr.,24,2024,PHX,2,26,56,Kansas
+972,Cam Christie,13,2024,LAC,2,16,46,Minnesota
+975,Skal Labissiere,26,2016,SAC,1,28,28,Kentucky
+978,Luke Travers,6,2022,CLE,2,26,56,Perth Wildcats (Australia)
+980,Anton Watson,2,2024,BOS,2,24,54,Gonzaga
+982,Harrison Ingram,27,2024,SAS,2,18,48,North Carolina
+983,Ulrich Chomche,15,2024,MEM,2,27,57,APR BBC (Rwanda)
+986,Tristen Newton,12,2024,IND,2,19,49,Connecticut
