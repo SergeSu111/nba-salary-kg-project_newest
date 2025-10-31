@@ -1,0 +1,57 @@
+{
+  "generated_at": "2025-10-31T01:22:13.430876+00:00",
+  "source_shape": [
+    2082,
+    90
+  ],
+  "output_shape": [
+    2082,
+    19
+  ],
+  "ids_present": {
+    "player_id": true,
+    "season": true
+  },
+  "targets_present": {
+    "salary_cap_ratio": true,
+    "log_salary_cap_ratio": true
+  },
+  "requested_features": [
+    "GP",
+    "Min",
+    "PTS",
+    "FP",
+    "PTS_per_min",
+    "FTA",
+    "FTM_per_min",
+    "FGA_per_min",
+    "3PA_per_min",
+    "FG%",
+    "3P%",
+    "FT%",
+    "TS%_calc",
+    "DREB_share",
+    "PF_per_min"
+  ],
+  "kept_features": [
+    "GP",
+    "Min",
+    "PTS",
+    "FP",
+    "PTS_per_min",
+    "FTA",
+    "FTM_per_min",
+    "FGA_per_min",
+    "3PA_per_min",
+    "FG%",
+    "3P%",
+    "FT%",
+    "TS%_calc",
+    "DREB_share",
+    "PF_per_min"
+  ],
+  "missing_features": [],
+  "age_csv": true,
+  "prefer_mode": "parquet",
+  "source_used": "parquet"
+}
