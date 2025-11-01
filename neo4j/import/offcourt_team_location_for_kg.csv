@@ -1,0 +1,31 @@
+team_id,team_abbr,city,state
+1,ATL,Atlanta,GA
+2,BOS,Boston,MA
+3,BKN,Brooklyn,NY
+4,CHA,Charlotte,NC
+5,CHI,Chicago,IL
+6,CLE,Cleveland,OH
+7,DAL,Dallas,TX
+8,DEN,Denver,CO
+9,DET,Detroit,MI
+10,GSW,San Francisco,CA
+11,HOU,Houston,TX
+12,IND,Indianapolis,IN
+13,LAC,Los Angeles,CA
+14,LAL,Los Angeles,CA
+15,MEM,Memphis,TN
+16,MIA,Miami,FL
+17,MIL,Milwaukee,WI
+18,MIN,Minneapolis,MN
+19,NOP,New Orleans,LA
+20,NYK,New York,NY
+21,OKC,Oklahoma City,OK
+22,ORL,Orlando,FL
+23,PHI,Philadelphia,PA
+24,PHX,Phoenix,AZ
+25,POR,Portland,OR
+26,SAC,Sacramento,CA
+27,SAS,San Antonio,TX
+28,TOR,Toronto,Ontario
+29,UTA,Salt Lake City,UT
+30,WAS,Washington,DC

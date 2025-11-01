@@ -1,0 +1,76 @@
+{
+  "input_location_path": "data/raw_external/NBA_team_location.csv",
+  "xwalk_from": "neo4j/import/offcourt_team_value_for_kg.csv",
+  "source_rows": 30,
+  "rows_out": 30,
+  "rows_missing_team_id_dropped": 0,
+  "columns_out": [
+    "team_id",
+    "team_abbr",
+    "city",
+    "state"
+  ],
+  "unique_teams_out": 30,
+  "sample": [
+    {
+      "team_id": 1,
+      "team_abbr": "ATL",
+      "city": "Atlanta",
+      "state": "GA"
+    },
+    {
+      "team_id": 2,
+      "team_abbr": "BOS",
+      "city": "Boston",
+      "state": "MA"
+    },
+    {
+      "team_id": 3,
+      "team_abbr": "BKN",
+      "city": "Brooklyn",
+      "state": "NY"
+    },
+    {
+      "team_id": 4,
+      "team_abbr": "CHA",
+      "city": "Charlotte",
+      "state": "NC"
+    },
+    {
+      "team_id": 5,
+      "team_abbr": "CHI",
+      "city": "Chicago",
+      "state": "IL"
+    },
+    {
+      "team_id": 6,
+      "team_abbr": "CLE",
+      "city": "Cleveland",
+      "state": "OH"
+    },
+    {
+      "team_id": 7,
+      "team_abbr": "DAL",
+      "city": "Dallas",
+      "state": "TX"
+    },
+    {
+      "team_id": 8,
+      "team_abbr": "DEN",
+      "city": "Denver",
+      "state": "CO"
+    },
+    {
+      "team_id": 9,
+      "team_abbr": "DET",
+      "city": "Detroit",
+      "state": "MI"
+    },
+    {
+      "team_id": 10,
+      "team_abbr": "GSW",
+      "city": "San Francisco",
+      "state": "CA"
+    }
+  ]
+}
