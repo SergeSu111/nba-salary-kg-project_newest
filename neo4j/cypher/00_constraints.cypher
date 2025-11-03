@@ -60,3 +60,8 @@ FOR (tv:TeamValue) REQUIRE tv.year IS NOT NULL;
 // 如需：保证命名不为空
 // CREATE CONSTRAINT draftpool_label_exists IF NOT EXISTS
 // FOR (d:DraftPool) REQUIRE d.label IS NOT NULL;
+
+
+// 奖项名称建立唯一索引（避免多次导入重复建 Award 节点）
+CREATE CONSTRAINT award_name_unique IF NOT EXISTS
+FOR (a:Award) REQUIRE a.name IS UNIQUE;
