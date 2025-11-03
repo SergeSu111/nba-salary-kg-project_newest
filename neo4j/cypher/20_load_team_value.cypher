@@ -1,4 +1,4 @@
-USING PERIODIC COMMIT
+CALL() {
 LOAD CSV WITH HEADERS FROM 'file:///offcourt_team_value_for_kg.csv' AS row
 WITH row,
      toInteger(row.team_id) AS tid,
@@ -13,4 +13,5 @@ MERGE (s:Season {year: yr})
 MERGE (tv:TeamValue {team_id: tid, year: yr})
   ON CREATE SET tv.value = val
 MERGE (t)-[:HAS_VALUE]->(tv)
-MERGE (t)-[:PLAYS_SEASON]->(s);
+MERGE (t)-[:PLAYS_SEASON]->(s)
+} IN TRANSACTIONS OF 1000 ROWS;

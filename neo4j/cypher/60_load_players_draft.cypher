@@ -1,4 +1,4 @@
-USING PERIODIC COMMIT
+CALL () {
 LOAD CSV WITH HEADERS FROM 'file:///offcourt_draft_for_kg.csv' AS row
 WITH row,
      toInteger(row.player_id) AS pid,
@@ -13,7 +13,8 @@ MERGE (p:Player {player_id: pid})
 SET  p.draft_year = coalesce(p.draft_year, yr),
      p.draft_team_abbr = coalesce(p.draft_team_abbr, row.draft_team_abbr),
      p.overall_pick = coalesce(p.overall_pick, opk),
-     p.round = coalesce(p.round, rnd);
+     p.round = coalesce(p.round, rnd)
 MERGE (t:Team {team_id: tid})
 MERGE (p)-[r:DRAFTED_BY]->(t)
-  ON CREATE SET r.year = yr, r.round = rnd, r.round_pick = rpk, r.overall_pick = opk;
+  ON CREATE SET r.year = yr, r.round = rnd, r.round_pick = rpk, r.overall_pick = opk
+  } IN TRANSACTIONS OF 1000 ROWS;

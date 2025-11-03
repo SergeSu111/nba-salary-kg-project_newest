@@ -1,6 +1,7 @@
-USING PERIODIC COMMIT
+CALL () {
 LOAD CSV WITH HEADERS FROM 'file:///player_age.csv' AS row
 WITH row, toInteger(row.player_id) AS pid, toFloat(row.Age) AS age
 WHERE pid IS NOT NULL AND age IS NOT NULL
 MATCH (p:Player {player_id: pid})
-SET p.age = age;
+SET p.age = age
+} IN TRANSACTIONS OF 1000 ROWS;
