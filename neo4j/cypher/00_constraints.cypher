@@ -65,3 +65,5 @@ FOR (tv:TeamValue) REQUIRE tv.year IS NOT NULL;
 // 奖项名称建立唯一索引（避免多次导入重复建 Award 节点）
 CREATE CONSTRAINT award_name_unique IF NOT EXISTS
 FOR (a:Award) REQUIRE a.name IS UNIQUE;
+
+CREATE CONSTRAINT injury_type_unique IF NOT EXISTS FOR (i:InjuryType) REQUIRE i.name IS UNIQUE;
