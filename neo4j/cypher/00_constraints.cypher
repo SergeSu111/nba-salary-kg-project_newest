@@ -67,3 +67,6 @@ CREATE CONSTRAINT award_name_unique IF NOT EXISTS
 FOR (a:Award) REQUIRE a.name IS UNIQUE;
 
 CREATE CONSTRAINT injury_type_unique IF NOT EXISTS FOR (i:InjuryType) REQUIRE i.name IS UNIQUE;
+
+// 1. 设置约束 agent
+CREATE CONSTRAINT agent_name_unique IF NOT EXISTS FOR (a:Agent) REQUIRE a.name IS UNIQUE;
