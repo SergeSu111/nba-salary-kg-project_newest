@@ -11,15 +11,17 @@ DATA_ROOT = Path("neo4j/import")
 
 def load_training_oncourt() -> pd.DataFrame:
     """
-    Level0 用的 base 表（你现在的 training_oncourt_features）
-    KEY: Player_id + season
+    Level0 用的 base 表（training_oncourt_features_with_team）
+    KEY: player_id + season (+ team_abbr)
     """
-    path = DATA_ROOT / "training_oncourt_features.csv"
+    path = DATA_ROOT / "training_oncourt_features_with_team.csv"
     df = pd.read_csv(path)
 
-    # 统一主键名字
     if "Player_id" in df.columns:
         df = df.rename(columns={"Player_id": "player_id"})
+    # ⚠️ 关键：把 Team 改成 team_abbr，后面 join 用它
+    if "Team" in df.columns and "team_abbr" not in df.columns:
+        df = df.rename(columns={"Team": "team_abbr"})
 
     return df
 
@@ -97,69 +99,49 @@ def build_age_features() -> pd.DataFrame:
 def build_team_value_features() -> pd.DataFrame:
     """
     从 offcourt_team_value_for_kg.csv 构造 team 价值相关特征
-    KEY: team_id + season
+    KEY: team_abbr + season
     """
     path = DATA_ROOT / "offcourt_team_value_for_kg.csv"
     df = pd.read_csv(path)
 
-    # 假设有 team_id, season, team_value 这样的列
-    # 按实际列名改
-    rename_map = {}
-    if "Team_id" in df.columns:
-        rename_map["Team_id"] = "team_id"
-    if "year" in df.columns:
-        rename_map["year"] = "season"
-    if "team_value_usd" in df.columns:
-        rename_map["team_value_usd"] = "team_value_usd"
+    # year -> season
+    if "year" in df.columns and "season" not in df.columns:
+        df = df.rename(columns={"year": "season"})
 
-    df = df.rename(columns=rename_map)
-
-    # 只保留我们关心的列
-    keep_cols = ["team_id", "season", "team_value_usd"]
+    # 只保留我们关心的列（用 team_abbr 当 key）
+    keep_cols = ["team_abbr", "season", "team_value_usd"]
     keep_cols = [c for c in keep_cols if c in df.columns]
-    df = df[keep_cols].drop_duplicates(subset=["team_id", "season"])
+    df = df[keep_cols].drop_duplicates(subset=["team_abbr", "season"])
 
     # 做一个百分位 rank，用来表示球队在联盟的价值位置
-    if "team_value_usd" in df.columns:
+    if "team_value_usd" in df.columns and "season" in df.columns:
         df["team_value_pct"] = (
-            df.groupby("season")["team_value_usd"]
-            .rank(pct=True)
+            df.groupby("season")["team_value_usd"].rank(pct=True)
         )
         # 大市场标记：前 25% 的球队
         df["team_big_market_flag"] = df["team_value_pct"] >= 0.75
 
     return df
 
-
 # ------------ Team location / market 相关 ------------
 
 def build_team_location_features() -> pd.DataFrame:
     """
     从 offcourt_team_location_for_kg.csv 提取球队所在城市/市场信息
-    KEY: team_id (+ 可选 season)
+    KEY: team_abbr
     """
     path = DATA_ROOT / "offcourt_team_location_for_kg.csv"
     df = pd.read_csv(path)
 
-    rename_map = {}
-    if "team_id" in df.columns:
-        rename_map["team_id"] = "team_id"
-    if "Year" in df.columns and "season" not in df.columns:
-        rename_map["Year"] = "season"
-
-    df = df.rename(columns=rename_map)
-
-    # 假设有这些列，按实际情况改：
-    #   city, state, market_size, region, country
-    #   如果没有 market_size，可以之后用 city 去映射
-    keep = ["team_id"]
+    # 只用 team_abbr + 位置信息
+    keep = ["team_abbr"]
     for c in ["season", "city", "state", "market_size", "region"]:
         if c in df.columns:
             keep.append(c)
 
-    df = df[keep].drop_duplicates(subset=[c for c in keep if c in ["team_id", "season"]])
+    df = df[keep].drop_duplicates(subset=["team_abbr"])
 
-    # 做一些简单编码：例如西海岸/东海岸/中部
+    # 做一些简单编码：例如西海岸/东海岸
     if "region" in df.columns:
         df["team_region_is_west"] = df["region"].str.contains("West", case=False, na=False)
         df["team_region_is_east"] = df["region"].str.contains("East", case=False, na=False)
@@ -299,8 +281,6 @@ def build_level1_training_table() -> pd.DataFrame:
     # 如果 season 列名不是 season，这里统一一下
     if "Year" in base.columns and "season" not in base.columns:
         base = base.rename(columns={"Year": "season"})
-    if "Team_id" in base.columns and "team_id" not in base.columns:
-        base = base.rename(columns={"Team_id": "team_id"})
 
     draft = build_draft_features()
     awards = build_award_features()
@@ -313,34 +293,28 @@ def build_level1_training_table() -> pd.DataFrame:
     df = base.copy()
 
     # ---------- player 级别合并 ----------
-    # draft / agents: 只按 player_id 合并（所有赛季共用）
     df = df.merge(draft, on="player_id", how="left")
     df = df.merge(agents, on="player_id", how="left")
+    df = df.merge(age, on="player_id", how="left")  # age_now: player-level
 
-    # age: 按 player_id + season 合并
-    df = df.merge(age, on="player_id", how="left")
-
-    # years since draft
     if "season" in df.columns and "draft_year" in df.columns:
         df["years_since_draft"] = df["season"] - df["draft_year"]
 
-    # ---------- team 级别合并 ----------
-    if "team_id" not in df.columns:
-        raise ValueError("training_oncourt_features 中需要有 team_id（或 Team_id）列")
+    # ---------- team 级别合并（用 team_abbr） ----------
+    if "team_abbr" not in df.columns:
+        raise ValueError("training_oncourt_features 中需要有 team_abbr（原来的 Team 列）")
 
-    # team value: 一般是 team_id + season
-    merge_keys_tv = ["team_id", "season"] if "season" in team_value.columns else ["team_id"]
+    # team value: team_abbr + season
+    merge_keys_tv = ["team_abbr", "season"] if "season" in team_value.columns else ["team_abbr"]
     df = df.merge(team_value, on=merge_keys_tv, how="left")
 
-    # team location: 可能只有 team_id，也可能有 season
-    merge_keys_loc = ["team_id", "season"] if "season" in team_loc.columns else ["team_id"]
-    df = df.merge(team_loc, on=merge_keys_loc, how="left")
+    # team location: 一般只按 team_abbr
+    df = df.merge(team_loc, on="team_abbr", how="left")
 
     # ---------- award / injury ----------
     df = df.merge(awards, on=["player_id", "season"], how="left")
     df = df.merge(injury, on=["player_id", "season"], how="left")
 
-    # award / injury 缺失值处理
     for col in df.columns:
         if col.startswith("award_") or col.startswith("injury_"):
             df[col] = df[col].fillna(0)
@@ -349,7 +323,6 @@ def build_level1_training_table() -> pd.DataFrame:
         df["injury_any"] = df["injury_any"].fillna(False)
 
     return df
-
 
 def load_training_table(level: Literal["level0", "level1"] = "level1") -> pd.DataFrame:
     """
