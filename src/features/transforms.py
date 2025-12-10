@@ -211,7 +211,7 @@ def finalize_fill(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_feature_view(
     df: pd.DataFrame,
-    drop_text_cols: list[str] = ["Player","Team"],
+    drop_text_cols: list[str] = ["Player"],
     add_logs_for: list[str] = None,
 ) -> pd.DataFrame:
     """
