@@ -309,6 +309,7 @@ def main() -> None:
     TAB = Path("data/processed/training_level1_full.csv")
     NODE2VEC = Path("graph/embeddings/node2vec_L1A_player_embeddings.csv")
     ROTATE = Path("graph/embeddings/rotate_L1B_cpu_player_embeddings.csv")
+    GNN_V0 = Path("graph/embeddings/gnn_v0_sage_player_embeddings.csv")
 
     # Load tabular + L0'
     df_tab, oncourt_cols = load_tabular(TAB)
@@ -316,21 +317,25 @@ def main() -> None:
     # Paper-grade alignment:
     # Use the same player subset across all relational methods (intersection of player coverage)
     p_node2vec = get_player_set(NODE2VEC)
-    p_rotate = get_player_set(ROTATE)
-    common_players = p_node2vec & p_rotate
+    p_rotate   = get_player_set(ROTATE)
+    p_gnn_v0   = get_player_set(GNN_V0)
+
+    common_players = p_node2vec & p_rotate & p_gnn_v0   
 
     if len(common_players) == 0:
         raise ValueError("Intersection of players between Node2Vec and RotatE is empty. Check embedding files.")
 
     df_tab_common = df_tab[df_tab["player_id"].isin(common_players)].copy()
 
-    print(f"[common] players node2vec={len(p_node2vec)} rotate={len(p_rotate)} common={len(common_players)}")
+    print(f"[common] players node2vec={len(p_node2vec)} rotate={len(p_rotate)} gnn_v0={len(p_gnn_v0)} common={len(common_players)}")
+
     print(f"[common] tabular rows before={len(df_tab)} after={len(df_tab_common)}")
 
     rows: List[Dict[str, float]] = []
     rows += evaluate_setting(df_tab_common, oncourt_cols, NODE2VEC, "L1-A (Node2Vec)")
     rows += evaluate_setting(df_tab_common, oncourt_cols, ROTATE, "L1-B (RotatE)")
-
+    rows += evaluate_setting(df_tab_common, oncourt_cols, GNN_V0,   "GNN V0 (GraphSAGE, featureless, supervised)")
+    
     out = pd.DataFrame(rows).sort_values(["setting", "model"]).reset_index(drop=True)
 
     _ensure_dir(Path("results"))
