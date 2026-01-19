@@ -24,13 +24,15 @@ OFFCOURT_EXACT = [
     "overall_pick", "round", "round_pick", "draft_year",
     "undrafted_flag",
 ]
-OFFCOURT_CONTAINS = ("team", "market", "city", "state", "region", "pick")
+# IMPORTANT: include "draft" to catch messy names like "drafthe Year"
+OFFCOURT_CONTAINS = ("draft", "team", "agent", "market", "city", "state", "region", "pick")
 
 def is_offcourt(col: str) -> bool:
     lc = col.lower()
-    if col.startswith(OFFCOURT_PREFIXES):
+    if lc.startswith(OFFCOURT_PREFIXES):
         return True
-    if col in OFFCOURT_EXACT:
+    # exact rules (keep original case list, but compare lower for safety)
+    if col in OFFCOURT_EXACT or lc in [x.lower() for x in OFFCOURT_EXACT]:
         return True
     if any(k in lc for k in OFFCOURT_CONTAINS):
         return True

@@ -24,7 +24,7 @@ OFFCOURT_EXACT = [
     "overall_pick", "round", "round_pick", "draft_year",
     "undrafted_flag",
 ]
-OFFCOURT_CONTAINS = ("team", "market", "city", "state", "region", "pick")
+OFFCOURT_CONTAINS = ("draft", "team", "agent", "market", "city", "state", "region", "pick")
 
 def is_offcourt(col: str) -> bool:
     lc = col.lower()
@@ -49,7 +49,7 @@ def get_oncourt_cols(df: pd.DataFrame) -> list[str]:
         .tolist()
     )
 
-    safe_cols = [c for c in numeric_bool_cols if not c.startswith(LEAKY_PREFIXES)]
+    safe_cols = [c for c in numeric_bool_cols if not c.lower().startswith(LEAKY_PREFIXES)]
     oncourt_cols = sorted([c for c in safe_cols if not is_offcourt(c)])
 
     return oncourt_cols
