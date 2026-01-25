@@ -1,53 +1,57 @@
 setting,model,R2,MAE,RMSE,cold_ratio
-Baseline (L0'),RandomForest,0.6473 ± 0.0018,0.5000 ± 0.0022,0.6900 ± 0.0018,0.15130023640661938
-Baseline (L0'),Ridge,0.5527 ± 0.0000,0.6062 ± 0.0000,0.7770 ± 0.0000,0.15130023640661938
-Baseline (L0') (Cold-Start),RandomForest,0.4297 ± 0.0081,0.4059 ± 0.0058,0.5865 ± 0.0042,
-Baseline (L0') (Cold-Start),Ridge,0.1861 ± 0.0000,0.5070 ± 0.0000,0.7007 ± 0.0000,
-GNN_V0 + L0',RandomForest,0.5898 ± 0.0016,0.5246 ± 0.0011,0.7440 ± 0.0015,0.15130023640661938
-GNN_V0 + L0',Ridge,0.5081 ± 0.0000,0.5989 ± 0.0000,0.8148 ± 0.0000,0.15130023640661938
-GNN_V0 + L0' (Cold-Start),RandomForest,0.1184 ± 0.0144,0.5358 ± 0.0047,0.7293 ± 0.0060,
-GNN_V0 + L0' (Cold-Start),Ridge,-0.4628 ± 0.0000,0.7328 ± 0.0000,0.9394 ± 0.0000,
-GNN_V0 Only,RandomForest,0.4200 ± 0.0006,0.6529 ± 0.0005,0.8847 ± 0.0005,0.15130023640661938
-GNN_V0 Only,Ridge,0.4041 ± 0.0000,0.6741 ± 0.0000,0.8968 ± 0.0000,0.15130023640661938
-GNN_V0 Only (Cold-Start),Ridge,-0.4013 ± 0.0000,0.7098 ± 0.0000,0.9195 ± 0.0000,
-GNN_V0 Only (Cold-Start),RandomForest,-0.4320 ± 0.0078,0.7105 ± 0.0022,0.9295 ± 0.0025,
-GNN_V1 + L0',RandomForest,0.5565 ± 0.0009,0.5636 ± 0.0012,0.7737 ± 0.0007,0.15130023640661938
-GNN_V1 + L0',Ridge,0.5079 ± 0.0000,0.6175 ± 0.0000,0.8150 ± 0.0000,0.15130023640661938
-GNN_V1 + L0' (Cold-Start),RandomForest,-0.1378 ± 0.0107,0.6078 ± 0.0040,0.8285 ± 0.0039,
-GNN_V1 + L0' (Cold-Start),Ridge,-0.5795 ± 0.0000,0.7415 ± 0.0000,0.9762 ± 0.0000,
-GNN_V1 Only,RandomForest,0.3993 ± 0.0007,0.6750 ± 0.0004,0.9004 ± 0.0005,0.15130023640661938
-GNN_V1 Only,Ridge,0.2968 ± 0.0000,0.7564 ± 0.0000,0.9742 ± 0.0000,0.15130023640661938
-GNN_V1 Only (Cold-Start),RandomForest,-0.5040 ± 0.0045,0.7348 ± 0.0024,0.9526 ± 0.0014,
-GNN_V1 Only (Cold-Start),Ridge,-0.3983 ± 0.0000,0.6927 ± 0.0000,0.9185 ± 0.0000,
-Node2Vec + L0',RandomForest,0.6605 ± 0.0010,0.4972 ± 0.0005,0.6769 ± 0.0009,0.15130023640661938
-Node2Vec + L0',Ridge,0.5557 ± 0.0000,0.5989 ± 0.0000,0.7744 ± 0.0000,0.15130023640661938
-Node2Vec + L0' (Cold-Start),RandomForest,0.3638 ± 0.0090,0.4384 ± 0.0016,0.6195 ± 0.0044,
-Node2Vec + L0' (Cold-Start),Ridge,0.1822 ± 0.0000,0.5175 ± 0.0000,0.7024 ± 0.0000,
-Node2Vec Only,Ridge,0.0750 ± 0.0000,0.9225 ± 0.0000,1.1173 ± 0.0000,0.15130023640661938
-Node2Vec Only,RandomForest,0.4112 ± 0.0009,0.6799 ± 0.0007,0.8915 ± 0.0007,0.15130023640661938
-Node2Vec Only (Cold-Start),RandomForest,-0.5082 ± 0.0147,0.7163 ± 0.0052,0.9539 ± 0.0046,
-Node2Vec Only (Cold-Start),Ridge,-1.1003 ± 0.0000,0.8656 ± 0.0000,1.1257 ± 0.0000,
-RotatE + L0',RandomForest,0.6716 ± 0.0020,0.4835 ± 0.0013,0.6657 ± 0.0020,0.15130023640661938
-RotatE + L0',Ridge,0.5230 ± 0.0000,0.6235 ± 0.0000,0.8023 ± 0.0000,0.15130023640661938
-RotatE + L0' (Cold-Start),RandomForest,0.4076 ± 0.0078,0.4211 ± 0.0038,0.5978 ± 0.0039,
-RotatE + L0' (Cold-Start),Ridge,-0.0891 ± 0.0000,0.6078 ± 0.0000,0.8106 ± 0.0000,
-RotatE Only,RandomForest,0.3829 ± 0.0016,0.7007 ± 0.0014,0.9126 ± 0.0012,0.15130023640661938
-RotatE Only,Ridge,0.0824 ± 0.0000,0.9248 ± 0.0000,1.1128 ± 0.0000,0.15130023640661938
-RotatE Only (Cold-Start),RandomForest,-0.8436 ± 0.0113,0.8402 ± 0.0042,1.0546 ± 0.0032,
-RotatE Only (Cold-Start),Ridge,-1.3558 ± 0.0000,0.9677 ± 0.0000,1.1922 ± 0.0000,
-V2_Inductive + L0',Ridge,0.4787 ± 0.0000,0.6869 ± 0.0000,0.8388 ± 0.0000,0.15130023640661938
-V2_Inductive + L0',RandomForest,0.6525 ± 0.0009,0.5014 ± 0.0017,0.6848 ± 0.0009,0.15130023640661938
-V2_Inductive + L0' (Cold-Start),Ridge,-0.6469 ± 0.0000,0.7980 ± 0.0000,0.9968 ± 0.0000,
-V2_Inductive + L0' (Cold-Start),RandomForest,0.1620 ± 0.0172,0.4825 ± 0.0067,0.7110 ± 0.0073,
-V2_Inductive Only,RandomForest,0.1867 ± 0.0045,0.8715 ± 0.0038,1.0477 ± 0.0029,0.15130023640661938
-V2_Inductive Only,Ridge,0.1691 ± 0.0000,0.8841 ± 0.0000,1.0590 ± 0.0000,0.15130023640661938
-V2_Inductive Only (Cold-Start),RandomForest,-0.4685 ± 0.0315,0.7245 ± 0.0093,0.9412 ± 0.0101,
-V2_Inductive Only (Cold-Start),Ridge,-1.5555 ± 0.0000,1.0390 ± 0.0000,1.2417 ± 0.0000,
-V2_Transductive + L0',RandomForest,0.5831 ± 0.0033,0.5428 ± 0.0034,0.7501 ± 0.0030,0.15130023640661938
-V2_Transductive + L0',Ridge,0.4169 ± 0.0000,0.7088 ± 0.0000,0.8871 ± 0.0000,0.15130023640661938
-V2_Transductive + L0' (Cold-Start),RandomForest,0.1165 ± 0.0116,0.4986 ± 0.0079,0.7301 ± 0.0048,
-V2_Transductive + L0' (Cold-Start),Ridge,-0.8253 ± 0.0000,0.8476 ± 0.0000,1.0494 ± 0.0000,
-V2_Transductive Only,RandomForest,0.2240 ± 0.0033,0.8246 ± 0.0015,1.0234 ± 0.0022,0.15130023640661938
-V2_Transductive Only,Ridge,0.0953 ± 0.0000,0.9005 ± 0.0000,1.1050 ± 0.0000,0.15130023640661938
-V2_Transductive Only (Cold-Start),RandomForest,-0.8931 ± 0.0270,0.8540 ± 0.0082,1.0687 ± 0.0076,
-V2_Transductive Only (Cold-Start),Ridge,-1.5771 ± 0.0000,1.0360 ± 0.0000,1.2469 ± 0.0000,
+Baseline (Stats + Meta CSV),RandomForest,0.6653 ± 0.0010,0.4931 ± 0.0016,0.6722 ± 0.0010,0.15130023640661938
+Baseline (Stats + Meta CSV),Ridge,0.5518 ± 0.0000,0.6057 ± 0.0000,0.7778 ± 0.0000,0.15130023640661938
+Baseline (Stats + Meta CSV) (Cold-Start),RandomForest,0.4569 ± 0.0066,0.4049 ± 0.0021,0.5724 ± 0.0035,
+Baseline (Stats + Meta CSV) (Cold-Start),Ridge,0.1891 ± 0.0000,0.5047 ± 0.0000,0.6995 ± 0.0000,
+Baseline (Stats Only),RandomForest,0.6473 ± 0.0018,0.5000 ± 0.0022,0.6900 ± 0.0018,0.15130023640661938
+Baseline (Stats Only),Ridge,0.5527 ± 0.0000,0.6062 ± 0.0000,0.7770 ± 0.0000,0.15130023640661938
+Baseline (Stats Only) (Cold-Start),RandomForest,0.4297 ± 0.0081,0.4059 ± 0.0058,0.5865 ± 0.0042,
+Baseline (Stats Only) (Cold-Start),Ridge,0.1861 ± 0.0000,0.5070 ± 0.0000,0.7007 ± 0.0000,
+GNN_V0 + Stats,RandomForest,0.5898 ± 0.0016,0.5246 ± 0.0011,0.7440 ± 0.0015,0.15130023640661938
+GNN_V0 + Stats,Ridge,0.5081 ± 0.0000,0.5989 ± 0.0000,0.8148 ± 0.0000,0.15130023640661938
+GNN_V0 + Stats (Cold-Start),RandomForest,0.1184 ± 0.0144,0.5358 ± 0.0047,0.7293 ± 0.0060,
+GNN_V0 + Stats (Cold-Start),Ridge,-0.4628 ± 0.0000,0.7328 ± 0.0000,0.9394 ± 0.0000,
+GNN_V0 + Stats + Meta,Ridge,0.5139 ± 0.0000,0.5974 ± 0.0000,0.8100 ± 0.0000,0.15130023640661938
+GNN_V0 + Stats + Meta,RandomForest,0.5926 ± 0.0011,0.5236 ± 0.0009,0.7415 ± 0.0010,0.15130023640661938
+GNN_V0 + Stats + Meta (Cold-Start),RandomForest,0.1152 ± 0.0119,0.5383 ± 0.0038,0.7306 ± 0.0049,
+GNN_V0 + Stats + Meta (Cold-Start),Ridge,-0.4565 ± 0.0000,0.7320 ± 0.0000,0.9374 ± 0.0000,
+GNN_V1 + Stats,RandomForest,0.5565 ± 0.0009,0.5636 ± 0.0012,0.7737 ± 0.0007,0.15130023640661938
+GNN_V1 + Stats,Ridge,0.5079 ± 0.0000,0.6175 ± 0.0000,0.8150 ± 0.0000,0.15130023640661938
+GNN_V1 + Stats (Cold-Start),RandomForest,-0.1378 ± 0.0107,0.6078 ± 0.0040,0.8285 ± 0.0039,
+GNN_V1 + Stats (Cold-Start),Ridge,-0.5795 ± 0.0000,0.7415 ± 0.0000,0.9762 ± 0.0000,
+GNN_V1 + Stats + Meta,RandomForest,0.5682 ± 0.0015,0.5579 ± 0.0022,0.7634 ± 0.0013,0.15130023640661938
+GNN_V1 + Stats + Meta,Ridge,0.5134 ± 0.0000,0.6149 ± 0.0000,0.8104 ± 0.0000,0.15130023640661938
+GNN_V1 + Stats + Meta (Cold-Start),RandomForest,-0.1469 ± 0.0177,0.6142 ± 0.0063,0.8318 ± 0.0064,
+GNN_V1 + Stats + Meta (Cold-Start),Ridge,-0.5576 ± 0.0000,0.7342 ± 0.0000,0.9694 ± 0.0000,
+Node2Vec + Stats,RandomForest,0.6605 ± 0.0010,0.4972 ± 0.0005,0.6769 ± 0.0009,0.15130023640661938
+Node2Vec + Stats,Ridge,0.5557 ± 0.0000,0.5989 ± 0.0000,0.7744 ± 0.0000,0.15130023640661938
+Node2Vec + Stats (Cold-Start),Ridge,0.1822 ± 0.0000,0.5175 ± 0.0000,0.7024 ± 0.0000,
+Node2Vec + Stats (Cold-Start),RandomForest,0.3638 ± 0.0090,0.4384 ± 0.0016,0.6195 ± 0.0044,
+Node2Vec + Stats + Meta,RandomForest,0.6785 ± 0.0015,0.4911 ± 0.0012,0.6587 ± 0.0016,0.15130023640661938
+Node2Vec + Stats + Meta,Ridge,0.5524 ± 0.0000,0.6025 ± 0.0000,0.7773 ± 0.0000,0.15130023640661938
+Node2Vec + Stats + Meta (Cold-Start),RandomForest,0.4109 ± 0.0099,0.4367 ± 0.0035,0.5962 ± 0.0050,
+Node2Vec + Stats + Meta (Cold-Start),Ridge,0.1817 ± 0.0000,0.5140 ± 0.0000,0.7026 ± 0.0000,
+RotatE + Stats,RandomForest,0.6716 ± 0.0020,0.4835 ± 0.0013,0.6657 ± 0.0020,0.15130023640661938
+RotatE + Stats,Ridge,0.5230 ± 0.0000,0.6235 ± 0.0000,0.8023 ± 0.0000,0.15130023640661938
+RotatE + Stats (Cold-Start),RandomForest,0.4076 ± 0.0078,0.4211 ± 0.0038,0.5978 ± 0.0039,
+RotatE + Stats (Cold-Start),Ridge,-0.0891 ± 0.0000,0.6078 ± 0.0000,0.8106 ± 0.0000,
+RotatE + Stats + Meta,RandomForest,0.6958 ± 0.0021,0.4709 ± 0.0016,0.6407 ± 0.0023,0.15130023640661938
+RotatE + Stats + Meta,Ridge,0.5227 ± 0.0000,0.6225 ± 0.0000,0.8026 ± 0.0000,0.15130023640661938
+RotatE + Stats + Meta (Cold-Start),RandomForest,0.4536 ± 0.0037,0.4097 ± 0.0018,0.5741 ± 0.0019,
+RotatE + Stats + Meta (Cold-Start),Ridge,-0.0900 ± 0.0000,0.6113 ± 0.0000,0.8109 ± 0.0000,
+V2_Inductive + Stats,Ridge,0.4787 ± 0.0000,0.6869 ± 0.0000,0.8388 ± 0.0000,0.15130023640661938
+V2_Inductive + Stats,RandomForest,0.6525 ± 0.0009,0.5014 ± 0.0017,0.6848 ± 0.0009,0.15130023640661938
+V2_Inductive + Stats (Cold-Start),RandomForest,0.1620 ± 0.0172,0.4825 ± 0.0067,0.7110 ± 0.0073,
+V2_Inductive + Stats (Cold-Start),Ridge,-0.6469 ± 0.0000,0.7980 ± 0.0000,0.9968 ± 0.0000,
+V2_Inductive + Stats + Meta,RandomForest,0.6548 ± 0.0014,0.5096 ± 0.0023,0.6826 ± 0.0014,0.15130023640661938
+V2_Inductive + Stats + Meta,Ridge,0.4877 ± 0.0000,0.6780 ± 0.0000,0.8315 ± 0.0000,0.15130023640661938
+V2_Inductive + Stats + Meta (Cold-Start),RandomForest,0.1697 ± 0.0138,0.4991 ± 0.0069,0.7077 ± 0.0059,
+V2_Inductive + Stats + Meta (Cold-Start),Ridge,-0.6377 ± 0.0000,0.7941 ± 0.0000,0.9940 ± 0.0000,
+V2_Transductive + Stats,RandomForest,0.5831 ± 0.0033,0.5428 ± 0.0034,0.7501 ± 0.0030,0.15130023640661938
+V2_Transductive + Stats,Ridge,0.4169 ± 0.0000,0.7088 ± 0.0000,0.8871 ± 0.0000,0.15130023640661938
+V2_Transductive + Stats (Cold-Start),RandomForest,0.1165 ± 0.0116,0.4986 ± 0.0079,0.7301 ± 0.0048,
+V2_Transductive + Stats (Cold-Start),Ridge,-0.8253 ± 0.0000,0.8476 ± 0.0000,1.0494 ± 0.0000,
+V2_Transductive + Stats + Meta,RandomForest,0.5983 ± 0.0018,0.5383 ± 0.0016,0.7363 ± 0.0017,0.15130023640661938
+V2_Transductive + Stats + Meta,Ridge,0.4245 ± 0.0000,0.7001 ± 0.0000,0.8813 ± 0.0000,0.15130023640661938
+V2_Transductive + Stats + Meta (Cold-Start),RandomForest,0.1645 ± 0.0122,0.5018 ± 0.0036,0.7100 ± 0.0052,
+V2_Transductive + Stats + Meta (Cold-Start),Ridge,-0.8359 ± 0.0000,0.8495 ± 0.0000,1.0524 ± 0.0000,

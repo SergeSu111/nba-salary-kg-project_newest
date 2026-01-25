@@ -3,15 +3,9 @@
 """
 scripts/evaluate_v2_strongest.py
 
-THE FINAL BOSS: V2 Strongest Experiment (Full Roster Edition).
-Hypothesis: Can dynamic/inductive models beat static knowledge graphs when given demographic context?
-
-Configurations to Run (on 668 Intersection):
-1. Baseline (Stats + Time)
-2. Node2Vec + Stats + Time (Basic Homogeneous Structure)
-3. RotatE + Stats + Time (Complex Knowledge Graph Structure)
-4. V2 Transductive + Stats + Time (Dynamic Graph - Memorization)
-5. V2 Inductive + Stats + Time (Dynamic Graph - Reasoning)
+THE FINAL BOSS: V2 Strongest Experiment.
+Fixes: Removed redundant merge that caused KeyError 'age_now'.
+Now processes time features directly within the dataframe.
 """
 
 from __future__ import annotations
@@ -125,7 +119,7 @@ def load_tabular(tabular_path: Path) -> Tuple[pd.DataFrame, List[str], List[str]
     # 4. Filter DF (Ensure TIME_FEATS are included here!)
     keep_cols = ID_COLS + [TARGET_COL] + stats_cols + meta_cols + TIME_FEATS
     
-    # Defensive check
+    # Defensive check: ensure time feats exist
     for tf in TIME_FEATS:
         if tf not in df.columns:
             print(f"[WARN] Time feature '{tf}' not found in CSV. Creating dummy.")
@@ -148,7 +142,10 @@ def load_tabular(tabular_path: Path) -> Tuple[pd.DataFrame, List[str], List[str]
 
     return df, stats_cols, meta_cols
 
+# REPLACED: No more separate load/merge for time feats.
+# Instead, we just impute them in place if needed.
 def impute_time_feats(df: pd.DataFrame, time_cols: List[str]) -> pd.DataFrame:
+    # Just simple median fill if any NaNs remain
     train_mask = df["season"] < TEST_SEASON
     for c in time_cols:
         if c in df.columns:
@@ -300,20 +297,17 @@ def summarize(raw):
     return grp.agg(R2_mean=("R2", "mean"), R2_std=("R2", "std")).sort_values("R2_mean", ascending=False)
 
 def main():
-    print("=== V2 STRONGEST: The Final Test (All Models) ===")
+    print("=== V2 STRONGEST: The Final Test ===")
     
     df_tab, stats_cols, meta_cols = load_tabular(TAB)
-    time_cols = TIME_FEATS
+    time_cols = TIME_FEATS # Already in df_tab
     
-    # === UPDATED: FULL ROSTER ===
     emb_paths = {
-        "Node2Vec": NODE2VEC,
         "RotatE": ROTATE,
-        "V2_Transductive": GNN_V2_TRANS,
         "V2_Inductive": GNN_V2_IND, 
     }
     
-    # Intersection logic
+    # Intersection
     player_sets = {k: get_player_set(p) for k, p in emb_paths.items()}
     common = set.intersection(*player_sets.values())
     df_common = df_tab[df_tab["player_id"].isin(common)].copy()
@@ -323,39 +317,28 @@ def main():
     for seed in SEEDS:
         print(f"\n--- Seed {seed} ---")
         
-        # 1. Baseline: Stats + Time
+        # 1. Baseline: Stats + Time (No Meta, just pure stats + age)
         results.extend(evaluate_one_setting(
             df_common, stats_cols, meta_cols, time_cols, None,
             "Baseline (Stats + Time)", 
-            True, False, False, True, seed
+            use_stats=True, use_meta=False, use_emb=False, use_time=True, 
+            seed=seed
         ))
 
-        # 2. Node2Vec
-        results.extend(evaluate_one_setting(
-            df_common, stats_cols, meta_cols, time_cols, NODE2VEC,
-            "Node2Vec + Stats + Time", 
-            True, False, True, True, seed
-        ))
-
-        # 3. RotatE
+        # 2. RotatE: Stats + Time + Emb (Can V2 beat this?)
         results.extend(evaluate_one_setting(
             df_common, stats_cols, meta_cols, time_cols, ROTATE,
             "RotatE + Stats + Time", 
-            True, False, True, True, seed
+            use_stats=True, use_meta=False, use_emb=True, use_time=True, 
+            seed=seed
         ))
 
-        # 4. V2 Transductive
-        results.extend(evaluate_one_setting(
-            df_common, stats_cols, meta_cols, time_cols, GNN_V2_TRANS,
-            "V2 Transductive + Stats + Time", 
-            True, False, True, True, seed
-        ))
-
-        # 5. V2 Inductive
+        # 3. V2 Strongest: Stats + Time + Emb (The Challenger)
         results.extend(evaluate_one_setting(
             df_common, stats_cols, meta_cols, time_cols, GNN_V2_IND,
             "V2 Inductive + Stats + Time", 
-            True, False, True, True, seed
+            use_stats=True, use_meta=False, use_emb=True, use_time=True, 
+            seed=seed
         ))
 
     summary = summarize(pd.DataFrame(results))
