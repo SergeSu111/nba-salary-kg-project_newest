@@ -1,0 +1,40 @@
+{
+  "exp_name": "v2_full_sg_rgcn_paper",
+  "edge_index_pt_path": "graph\\edges\\edge_index_v2_full_sg.pt",
+  "master_mapping_path": "graph\\mappings\\master_node_id_to_idx.csv",
+  "bridge_path": "graph\\mappings\\playerSeason.csv",
+  "features_csv_path": "data\\processed\\training_level1_full.csv",
+  "test_season": 2024,
+  "val_season": 2023,
+  "target_col": "log_salary",
+  "time_feat_cols": [
+    "age_now",
+    "years_since_draft"
+  ],
+  "gnn_feat_cols": [
+    "pts_per_gp",
+    "reb_per_gp",
+    "ast_per_gp",
+    "stl_per_gp",
+    "blk_per_gp",
+    "ts%_calc",
+    "gp"
+  ],
+  "hidden_dim": 64,
+  "num_layers": 2,
+  "dropout": 0.2,
+  "num_bases": 4,
+  "lr": 0.003,
+  "weight_decay": 0.0001,
+  "epochs": 200,
+  "early_stop_patience": 30,
+  "log_every": 10,
+  "seed": 42,
+  "device": "cpu",
+  "warn_memory_threshold": 200000,
+  "run_root": "runs",
+  "run_modes": [
+    "graph",
+    "nograph"
+  ]
+}
