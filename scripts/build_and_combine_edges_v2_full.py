@@ -1,44 +1,47 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-build_and_combine_edges_v2_full.py
+build_and_combine_edges_v2_full.py (FINAL ROBUST VERSION)
 
-Build PyG-style edge_index_dict from modular edge CSVs (core / award / injury),
-and AUTO-generate node_id -> idx mapping from the SAME edges to ensure perfect alignment.
+Integrates strictly enforced audits (NaN checks), robust mapping, and consistent normalization.
 
-Key features:
-- Combine edges in memory (no giant merged CSV required).
-- Auto mapping: collect all source_id/target_id across used edge files, assign idx 0..N-1.
-- Optional audits:
-    Award:
-      - non_future (default): leak if award_year > ps_season
-      - strict_past          : leak if award_year >= ps_season
-    Injury:
-      - leak if injury_season >= ps_season
-- Injury sg mode:
-    If --injury-sg not provided, reuse --injury-mg and dedup in memory.
-- Output:
-    - torch .pt containing edge_index_dict + rel_counts + mapping_path
-    - mapping CSV saved to graph/mappings by default
+Key Features:
+1. Mapping: Strictly enforces 'node_id' and 'idx' columns from MASTER mapping.
+2. Normalization: relation_type -> UPPER + REPLACE(" ", "_").
+3. Audits: 
+   - Raises ValueError if audit columns are missing.
+   - Raises ValueError if years cannot be parsed (prevents silent failures).
+4. Logic: Award audit rule parameterized via CLI.
+5. Safety: SG derived from MG in memory (Single Source of Truth).
+
+Usage:
+  python build_and_combine_edges_v2_full.py \
+    --mode v2_full \
+    --injury-variant sg \
+    --node-mapping master_node_id_to_idx.csv \
+    --core graph/edges/edges_gnn_v2_core_elementId_full.csv \
+    --award graph/edges/V2_Full_Award_Edges.csv \
+    --injury-mg graph/edges/V2_Full_Injury_multigraph_Edges_FULL_19073.csv \
+    --use-award --use-injury \
+    --audit-award --audit-injury \
+    --award-audit-rule non_future \
+    --output graph/edges/edge_index_v2_full_sg.pt
 """
 
 from __future__ import annotations
-
 import argparse
 import json
 from pathlib import Path
 from typing import Dict, Tuple, Optional, List
-
 import pandas as pd
 import torch
-
 
 # ----------------------------
 # Helpers
 # ----------------------------
 
 def _year4(x) -> Optional[int]:
-    """Parse first 4 digits of a year-like field. Returns None if cannot parse."""
+    """Parse first 4 digits of a year-like field."""
     if pd.isna(x):
         return None
     s = str(x).strip()
@@ -49,14 +52,8 @@ def _year4(x) -> Optional[int]:
     except Exception:
         return None
 
-
 def read_edges_csv(path: str) -> pd.DataFrame:
-    """
-    Read an edges CSV and normalize column names to lowercase.
-
-    Requires at least: source_id, target_id, relation_type
-    Keeps all columns (for audits), but mapping uses only those 3.
-    """
+    """Read CSV and normalize to standard columns: source_id, target_id, relation_type."""
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(f"Edges file not found: {path}")
@@ -64,346 +61,230 @@ def read_edges_csv(path: str) -> pd.DataFrame:
     df = pd.read_csv(p)
     df.columns = [c.lower() for c in df.columns]
 
+    # --- column alias handling (core file uses src/dst/rel) ---
+    col_map = {}
+    if "source_id" not in df.columns:
+        if "src" in df.columns: col_map["src"] = "source_id"
+        elif "source" in df.columns: col_map["source"] = "source_id"
+        elif "from" in df.columns: col_map["from"] = "source_id"
+    if "target_id" not in df.columns:
+        if "dst" in df.columns: col_map["dst"] = "target_id"
+        elif "target" in df.columns: col_map["target"] = "target_id"
+        elif "to" in df.columns: col_map["to"] = "target_id"
+    if "relation_type" not in df.columns:
+        if "rel" in df.columns: col_map["rel"] = "relation_type"
+        elif "relation" in df.columns: col_map["relation"] = "relation_type"
+        elif "type" in df.columns: col_map["type"] = "relation_type"
+
+    if col_map:
+        df = df.rename(columns=col_map)
+
     required = ["source_id", "target_id", "relation_type"]
     missing = [c for c in required if c not in df.columns]
     if missing:
-        raise ValueError(f"{path} missing required columns {missing}. Columns: {list(df.columns)}")
+        raise ValueError(
+            f"{path} missing required columns {missing}. "
+            f"Detected columns: {list(df.columns)}"
+        )
 
     df["source_id"] = df["source_id"].astype(str)
     df["target_id"] = df["target_id"].astype(str)
-    df["relation_type"] = df["relation_type"].astype(str).str.strip()
+
+    # strict normalization: UPPER + replace spaces with underscore
+    df["relation_type"] = (
+        df["relation_type"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .str.replace(" ", "_", regex=False)
+    )
     return df
 
 
+def load_node_mapping(mapping_path: str) -> Dict[str, int]:
+    """Load explicit node mapping with strict validation."""
+    p = Path(mapping_path)
+    if not p.exists():
+        raise FileNotFoundError(f"Node mapping not found: {mapping_path}")
+    
+    if p.suffix == '.json':
+        with open(p, 'r') as f:
+            obj = json.load(f)
+        return {str(k): int(v) for k, v in obj.items()}
+    
+    elif p.suffix == '.csv':
+        df = pd.read_csv(p)
+        df.columns = [c.lower() for c in df.columns]
+        
+        required = {"node_id", "idx"}
+        if not required.issubset(set(df.columns)):
+             raise ValueError(f"Mapping CSV must contain columns {required}. Got: {list(df.columns)}")
+        
+        return dict(zip(df["node_id"].astype(str), df["idx"].astype(int)))
+    else:
+        raise ValueError("Mapping must be .json or .csv")
+
 # ----------------------------
-# Audits
+# Audits (Enhanced)
 # ----------------------------
 
 def audit_award_leak(df: pd.DataFrame, rule: str = "non_future") -> None:
-    """
-    Award leak audit based on parsed first 4 digits.
-    Requires columns: ps_season, award_year
-
-    rule:
-      - non_future : leak if award_year > ps_season   (allows ==)
-      - strict_past: leak if award_year >= ps_season  (forbids ==)
-    """
     if "ps_season" not in df.columns or "award_year" not in df.columns:
         raise ValueError("Award audit requires columns: ps_season, award_year")
 
     psY = df["ps_season"].apply(_year4)
     awY = df["award_year"].apply(_year4)
 
-    if psY.isna().any() or awY.isna().any():
-        bad_rows = df[psY.isna() | awY.isna()].head(10)
-        raise AssertionError(
-            "Award audit failed: unparsable ps_season or award_year.\n"
-            f"Example rows:\n{bad_rows}"
-        )
+    # FIX: Check for parsing failures (NaN)
+    bad = psY.isna() | awY.isna()
+    if bad.any():
+        ex = df.loc[bad, ["source_id", "target_id", "relation_type", "ps_season", "award_year"]].head(10)
+        raise ValueError("Award audit failed: cannot parse year in ps_season/award_year.\n"
+                         f"Examples of bad data:\n{ex.to_string(index=False)}")
 
     if rule == "non_future":
         leaks = (awY > psY)
-    elif rule == "strict_past":
+    else: # strict_past
         leaks = (awY >= psY)
-    else:
-        raise ValueError("award audit rule must be 'non_future' or 'strict_past'")
 
     if leaks.any():
-        leak_df = df[leaks].head(20)
-        raise AssertionError(
-            f"Award leak detected under rule='{rule}': {int(leaks.sum())} rows.\n"
-            f"Examples:\n{leak_df[['source_id','target_id','relation_type','ps_season','award_year']].to_string(index=False)}"
-        )
-
+        raise AssertionError(f"Award Leak ({rule}): {leaks.sum()} rows violation.")
+    print(f"✅ Award Audit Passed ({rule})")
 
 def audit_injury_leak(df: pd.DataFrame) -> None:
-    """
-    Injury leak audit: require injury_season < ps_season
-    Requires columns: ps_season, injury_season
-    """
     if "ps_season" not in df.columns or "injury_season" not in df.columns:
         raise ValueError("Injury audit requires columns: ps_season, injury_season")
 
     psY = df["ps_season"].apply(_year4)
     injY = df["injury_season"].apply(_year4)
 
-    if psY.isna().any() or injY.isna().any():
-        bad_rows = df[psY.isna() | injY.isna()].head(10)
-        raise AssertionError(
-            "Injury audit failed: unparsable ps_season or injury_season.\n"
-            f"Example rows:\n{bad_rows}"
-        )
+    # FIX: Check for parsing failures (NaN)
+    bad = psY.isna() | injY.isna()
+    if bad.any():
+        ex = df.loc[bad, ["source_id", "target_id", "relation_type", "ps_season", "injury_season"]].head(10)
+        raise ValueError("Injury audit failed: cannot parse year in ps_season/injury_season.\n"
+                         f"Examples of bad data:\n{ex.to_string(index=False)}")
 
     leaks = (injY >= psY)
     if leaks.any():
-        leak_df = df[leaks].head(20)
-        raise AssertionError(
-            f"Injury leak detected: {int(leaks.sum())} rows have injury_season >= ps_season.\n"
-            f"Examples:\n{leak_df[['source_id','target_id','relation_type','ps_season','injury_season']].to_string(index=False)}"
-        )
-
+        raise AssertionError(f"Injury Leak: {leaks.sum()} rows violation (injury >= ps).")
+    print("✅ Injury Audit Passed (Strict Past)")
 
 # ----------------------------
-# Auto mapping
+# Build Logic
 # ----------------------------
 
-def build_node_id_to_idx_from_edges(edge_frames: List[pd.DataFrame]) -> Dict[str, int]:
-    """
-    Collect unique node_ids from source_id/target_id across edge_frames,
-    then assign idx 0..N-1 in a deterministic order (sorted by string).
-    """
-    nodes = set()
-    for df in edge_frames:
-        nodes.update(df["source_id"].astype(str).tolist())
-        nodes.update(df["target_id"].astype(str).tolist())
+def map_edges(df: pd.DataFrame, mapping: Dict[str, int]) -> torch.Tensor:
+    src = df["source_id"].map(mapping)
+    dst = df["target_id"].map(mapping)
 
-    # Deterministic ordering -> stable runs for same inputs
-    nodes_sorted = sorted(nodes)
-    return {nid: i for i, nid in enumerate(nodes_sorted)}
-
-
-def save_mapping_csv(mapping: Dict[str, int], path: str) -> str:
-    p = Path(path)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    df = pd.DataFrame({"node_id": list(mapping.keys()), "idx": list(mapping.values())})
-    df.to_csv(p, index=False)
-    return str(p)
-
-
-# ----------------------------
-# Mapping edges -> tensors
-# ----------------------------
-
-def map_edges_to_index(
-    df: pd.DataFrame,
-    node_mapping: Dict[str, int],
-    strict: bool = True,
-) -> torch.Tensor:
-    """
-    Map source_id/target_id strings to integer indices using node_mapping.
-    Returns edge_index tensor of shape [2, E].
-    """
-    src_idx = df["source_id"].map(node_mapping)
-    dst_idx = df["target_id"].map(node_mapping)
-
-    if strict and (src_idx.isna().any() or dst_idx.isna().any()):
-        bad_src = df[src_idx.isna()].head(10)["source_id"].tolist()
-        bad_dst = df[dst_idx.isna()].head(10)["target_id"].tolist()
+    if src.isna().any() or dst.isna().any():
+        missing_src = df.loc[src.isna(), "source_id"].unique()[:3]
+        missing_dst = df.loc[dst.isna(), "target_id"].unique()[:3]
         raise KeyError(
-            "Unmapped node ids found while mapping edges (should not happen if mapping is auto-built from same edges).\n"
-            f"bad_src examples: {bad_src}\n"
-            f"bad_dst examples: {bad_dst}\n"
+            f"Unmapped IDs found! Nodes in edges must exist in master mapping.\n"
+            f"Examples Missing Source: {missing_src}\n"
+            f"Examples Missing Target: {missing_dst}"
         )
 
-    src = torch.tensor(src_idx.astype(int).to_numpy(), dtype=torch.long)
-    dst = torch.tensor(dst_idx.astype(int).to_numpy(), dtype=torch.long)
-    return torch.stack([src, dst], dim=0)
-
-
-# ----------------------------
-# Build function
-# ----------------------------
-
-def load_and_select_edges(
-    mode: str,
-    injury_variant: str,
-    core_path: str,
-    award_path: Optional[str],
-    injury_mg_path: Optional[str],
-    injury_sg_path: Optional[str],
-    use_award: bool,
-    use_injury: bool,
-    audit_award: bool,
-    audit_injury: bool,
-    award_audit_rule: str,
-) -> List[pd.DataFrame]:
-    """
-    Load edge CSVs according to config and return list of DataFrames.
-    """
-    if mode not in ["v2_core", "v2_full"]:
-        raise ValueError("mode must be 'v2_core' or 'v2_full'")
-    if injury_variant not in ["mg", "sg"]:
-        raise ValueError("injury_variant must be 'mg' or 'sg'")
-    if award_audit_rule not in ["non_future", "strict_past"]:
-        raise ValueError("award_audit_rule must be 'non_future' or 'strict_past'")
-
-    edge_frames: List[pd.DataFrame] = []
-
-    # Core always
-    core_df = read_edges_csv(core_path)
-    edge_frames.append(core_df)
-
-    if mode == "v2_full":
-        if use_award:
-            if not award_path:
-                raise ValueError("award_path is required when use_award=True in v2_full mode")
-            award_df = read_edges_csv(award_path)
-            if audit_award:
-                audit_award_leak(award_df, rule=award_audit_rule)
-            edge_frames.append(award_df)
-
-        if use_injury:
-            if injury_variant == "mg":
-                if not injury_mg_path:
-                    raise ValueError("injury_mg_path is required for injury_variant='mg'")
-                inj_df = read_edges_csv(injury_mg_path)
-            else:
-                # sg: if injury_sg not provided, reuse injury_mg and dedup in memory
-                key_path = injury_sg_path or injury_mg_path
-                if not key_path:
-                    raise ValueError("Provide injury_sg_path or injury_mg_path to derive singlegraph")
-                inj_df = read_edges_csv(key_path)
-                inj_df = inj_df.drop_duplicates(subset=["source_id", "target_id", "relation_type"])
-
-            if audit_injury:
-                audit_injury_leak(inj_df)
-            edge_frames.append(inj_df)
-
-    return edge_frames
-
-
-def build_edge_index_dict_auto_mapping(
-    mode: str,
-    injury_variant: str,
-    core_path: str,
-    award_path: Optional[str],
-    injury_mg_path: Optional[str],
-    injury_sg_path: Optional[str],
-    use_award: bool,
-    use_injury: bool,
-    audit_award: bool,
-    audit_injury: bool,
-    award_audit_rule: str,
-    strict_mapping: bool,
-    mapping_save_path: Optional[str],
-) -> Tuple[Dict[str, torch.Tensor], Dict[str, int], Dict[str, int], Optional[str]]:
-    """
-    Build edge_index_dict using auto-generated node_id->idx mapping from the SAME edges.
-    Returns:
-      edge_index_dict, rel_counts, node_mapping, saved_mapping_path
-    """
-    edge_frames = load_and_select_edges(
-        mode=mode,
-        injury_variant=injury_variant,
-        core_path=core_path,
-        award_path=award_path,
-        injury_mg_path=injury_mg_path,
-        injury_sg_path=injury_sg_path,
-        use_award=use_award,
-        use_injury=use_injury,
-        audit_award=audit_award,
-        audit_injury=audit_injury,
-        award_audit_rule=award_audit_rule,
-    )
-
-    # Auto-build mapping from selected edges
-    node_mapping = build_node_id_to_idx_from_edges(edge_frames)
-
-    saved_path = None
-    if mapping_save_path:
-        saved_path = save_mapping_csv(node_mapping, mapping_save_path)
-
-    # Combine edges then group by relation_type
-    all_edges = pd.concat(edge_frames, ignore_index=True)
-
-    edge_index_dict: Dict[str, torch.Tensor] = {}
-    rel_counts: Dict[str, int] = {}
-    for rel, rel_df in all_edges.groupby("relation_type", sort=True):
-        edge_index = map_edges_to_index(rel_df, node_mapping, strict=strict_mapping)
-        edge_index_dict[rel] = edge_index
-        rel_counts[rel] = int(edge_index.size(1))
-
-    return edge_index_dict, rel_counts, node_mapping, saved_path
-
-
-# ----------------------------
-# CLI
-# ----------------------------
+    return torch.stack([
+        torch.tensor(src.values.astype(int), dtype=torch.long),
+        torch.tensor(dst.values.astype(int), dtype=torch.long)
+    ], dim=0)
 
 def main():
-    ap = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", required=True, choices=["v2_core", "v2_full"])
+    parser.add_argument("--injury-variant", default="mg", choices=["mg", "sg"])
+    
+    parser.add_argument("--node-mapping", required=True, help="Path to MASTER node mapping csv/json")
+    parser.add_argument("--core", required=True)
+    parser.add_argument("--award", help="Path to Award edges")
+    parser.add_argument("--injury-mg", help="Path to FULL Multigraph Injury edges")
+    
+    parser.add_argument("--use-award", action="store_true")
+    parser.add_argument("--use-injury", action="store_true")
+    parser.add_argument("--audit-award", action="store_true")
+    parser.add_argument("--audit-injury", action="store_true")
+    
+    parser.add_argument("--award-audit-rule", default="non_future", 
+                        choices=["non_future", "strict_past"])
+    
+    parser.add_argument("--output", required=True)
 
-    ap.add_argument("--mode", type=str, required=True, choices=["v2_core", "v2_full"])
-    ap.add_argument("--injury-variant", type=str, default="mg", choices=["mg", "sg"])
+    args = parser.parse_args()
 
-    ap.add_argument("--use-award", action="store_true", help="Include award edges (v2_full only).")
-    ap.add_argument("--use-injury", action="store_true", help="Include injury edges (v2_full only).")
+    # 1. Load Master Mapping
+    print(f"Loading mapping from: {args.node_mapping}")
+    node_mapping = load_node_mapping(args.node_mapping)
+    print(f"Master Mapping loaded: {len(node_mapping)} nodes")
 
-    ap.add_argument("--core", type=str, required=True)
-    ap.add_argument("--award", type=str, default=None)
-    ap.add_argument("--injury-mg", type=str, default=None)
-    ap.add_argument("--injury-sg", type=str, default=None)
+    # 2. Load Core
+    core_df = read_edges_csv(args.core)
+    frames = [core_df]
+    print(f"Core edges: {len(core_df)}")
 
-    ap.add_argument("--audit-award", action="store_true")
-    ap.add_argument("--audit-injury", action="store_true")
-    ap.add_argument("--award-audit-rule", type=str, default="non_future",
-                    choices=["non_future", "strict_past"])
+    # 3. Load Extras
+    if args.mode == "v2_full":
+        # --- AWARD ---
+        if args.use_award:
+            if not args.award:
+                raise ValueError("--award path required when --use-award is set")
+            aw_df = read_edges_csv(args.award)
+            if args.audit_award:
+                audit_award_leak(aw_df, rule=args.award_audit_rule)
+            frames.append(aw_df)
+            print(f"Award edges: {len(aw_df)}")
 
-    ap.add_argument("--non-strict-mapping", action="store_true",
-                    help="Do not error on unmapped ids (should never happen in auto-mapping).")
+        # --- INJURY ---
+        if args.use_injury:
+            if not args.injury_mg:
+                raise ValueError("--injury-mg path REQUIRED when --use-injury is set")
+            
+            # Always load MG
+            inj_df = read_edges_csv(args.injury_mg)
+            print(f"Injury (Master MG): {len(inj_df)}")
 
-    # NEW: auto mapping save path
-    ap.add_argument("--save-mapping", type=str, default=None,
-                    help="Save auto-generated node_id->idx mapping CSV to this path. "
-                         "If not provided, defaults to graph/mappings/node_id_to_idx__{mode}__{injury_variant}.csv")
+            if args.audit_injury:
+                audit_injury_leak(inj_df)
 
-    ap.add_argument("--output", type=str, default=None,
-                    help="Path to save torch object (edge_index_dict + rel_counts + mapping path).")
-    ap.add_argument("--print-counts", action="store_true",
-                    help="Print relation_type edge counts.")
-    ap.add_argument("--print-nodes", action="store_true",
-                    help="Print number of nodes in the auto mapping.")
+            # Variant Logic
+            if args.injury_variant == "sg":
+                before = len(inj_df)
+                inj_df = inj_df.drop_duplicates(subset=["source_id", "target_id", "relation_type"])
+                print(f"Injury (Derived SG): {before} -> {len(inj_df)} (Deduped)")
+            else:
+                print(f"Injury (MG): Using full weighted edges")
 
-    args = ap.parse_args()
+            frames.append(inj_df)
 
-    # Default mapping save path if not given
-    mapping_save_path = args.save_mapping
-    if mapping_save_path is None:
-        mapping_save_path = f"graph/mappings/node_id_to_idx__{args.mode}__{args.injury_variant}.csv"
+    # 4. Combine & Convert
+    full_df = pd.concat(frames, ignore_index=True)
+    
+    edge_index_dict = {}
+    rel_counts = {}
 
-    edge_index_dict, rel_counts, node_mapping, saved_mapping_path = build_edge_index_dict_auto_mapping(
-        mode=args.mode,
-        injury_variant=args.injury_variant,
-        core_path=args.core,
-        award_path=args.award,
-        injury_mg_path=args.injury_mg,
-        injury_sg_path=args.injury_sg,
-        use_award=(args.use_award if args.mode == "v2_full" else False),
-        use_injury=(args.use_injury if args.mode == "v2_full" else False),
-        audit_award=args.audit_award,
-        audit_injury=args.audit_injury,
-        award_audit_rule=args.award_audit_rule,
-        strict_mapping=not args.non_strict_mapping,
-        mapping_save_path=mapping_save_path,
-    )
+    for rtype, group in full_df.groupby("relation_type"):
+        print(f"Processing relation: {rtype}...")
+        try:
+            ei = map_edges(group, node_mapping)
+            edge_index_dict[rtype] = ei
+            rel_counts[rtype] = ei.size(1)
+        except KeyError as e:
+            print(f"❌ Error mapping relation {rtype}: {e}")
+            exit(1)
 
-    if args.print_nodes:
-        print(f"\nAuto-mapping nodes: {len(node_mapping)}")
-        if saved_mapping_path:
-            print(f"Mapping saved to: {saved_mapping_path}")
-
-    if args.print_counts:
-        print("\nRelation edge counts:")
-        for k in sorted(rel_counts.keys()):
-            print(f"  {k}: {rel_counts[k]}")
-
-    if args.output:
-        out = Path(args.output)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        torch.save(
-            {
-                "edge_index_dict": edge_index_dict,
-                "rel_counts": rel_counts,
-                "mode": args.mode,
-                "injury_variant": args.injury_variant,
-                "award_audit_rule": args.award_audit_rule,
-                "mapping_csv": saved_mapping_path,
-                "num_nodes": len(node_mapping),
-            },
-            out,
-        )
-        print(f"\nSaved: {out}")
-
+    # 5. Save
+    torch.save({
+        "edge_index_dict": edge_index_dict,
+        "rel_counts": rel_counts,
+        "mode": args.mode,
+        "injury_variant": args.injury_variant,
+        "mapping_source": args.node_mapping 
+    }, args.output)
+    
+    print(f"\n✅ Success! Saved to {args.output}")
+    print("Rel Counts:", rel_counts)
 
 if __name__ == "__main__":
     main()
