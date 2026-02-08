@@ -1,0 +1,17 @@
+Model,Player,Rescue,My_Err,Peer_Best_Err,Rescue_Advantage,Coverage
+RotatE,Jordan Poole,$4.7M,$5.0M,$7.2M,$2.2M,6
+RotatE,Anfernee Simons,$4.1M,$2.9M,$4.8M,$1.9M,6
+RotatE,Zion Williamson,$2.9M,$6.7M,$8.3M,$1.5M,6
+Node2Vec,Luka Dončić,$2.0M,$9.2M,$10.1M,$0.83M,6
+V1,Khris Middleton,$20.5M,$1.2M,$17.7M,$16.5M,6
+V1,Jrue Holiday,$10.5M,$2.8M,$13.3M,$10.4M,6
+V1,Terry Rozier,$10.9M,$6.4M,$16.4M,$10.0M,6
+V2_Ind,Herbert Jones,$3.3M,$5.6M,$8.1M,$2.5M,6
+V2_Ind,Jordan Clarkson,$1.9M,$1.7M,$4.1M,$2.3M,6
+V2_Ind,Jalen Brunson,$4.6M,$0.51M,$2.7M,$2.2M,6
+V2_Trans,Dejounte Murray,$7.0M,$5.0M,$8.4M,$3.4M,6
+V2_Trans,Coby White,$8.7M,$1.3M,$4.5M,$3.2M,6
+V2_Trans,D'Angelo Russell,$7.5M,$1.9M,$4.6M,$2.7M,6
+V2_Full,Anthony Edwards,$2.5M,$12.0M,$15.2M,$3.2M,6
+V2_Full,Naz Reid,$1.7M,$1.9M,$3.3M,$1.4M,6
+V2_Full,Dillon Brooks,$2.8M,$6.1M,$6.7M,$0.59M,6
