@@ -10,6 +10,12 @@ Updates:
 1. Uses 'unique_player_id.csv' to recover player names (Critical for concrete examples).
 2. Restores 'player_name' to ID_COLS so output CSVs have names.
 3. Keeps all strict evaluation protocols intact.
+
+NEW (for on+off baseline):
+4. Adds a strict, oracle-strength tabular baseline: Stats + Time + Meta (off-court tabular).
+5. Ensures meta cols are numeric-only (so median imputer won't crash).
+6. Does NOT change any embedding/graph settings (they remain Stats+Time(+Embeddings) only),
+   so previous results are unaffected except for the added new baseline row.
 """
 
 from __future__ import annotations
@@ -24,7 +30,6 @@ import pandas as pd
 import torch
 import xgboost as xgb
 
-from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
@@ -46,8 +51,8 @@ TEST_SEASON = 2024
 VAL_SEASON = 2023
 TARGET_COL = "log_salary"
 
-# 【恢复】现在有了名字映射，我们可以把 player_name 加回来了！
-ID_COLS = ["player_id", "season", "player_name"] 
+# Now we have name mapping, keep player_name for outputs
+ID_COLS = ["player_id", "season", "player_name"]
 
 TIME_FEATS = ["age_now", "years_since_draft"]
 SEEDS = [0, 1, 2, 3, 4]
@@ -61,7 +66,7 @@ _FORBIDDEN_KEYWORDS = ["award_", "injury_"]
 # 1. Base Data
 TAB = Path("data/processed/training_level1_full.csv")
 
-# 【新增】名字映射文件路径
+# Name mapping
 PLAYER_ID_MAP = Path("data/raw_on_court/unique_player_id.csv")
 
 # 2. Old Embeddings (CSV)
@@ -108,71 +113,86 @@ def cold_start_2024_subset(train_df: pd.DataFrame, test_df: pd.DataFrame) -> pd.
 
 def _parse_complex_safe(x) -> complex:
     s = str(x).strip().replace("i", "j")
-    if s.startswith("(") and s.endswith(")"): s = s[1:-1].strip()
-    try: return complex(s)
-    except: return complex(0)
+    if s.startswith("(") and s.endswith(")"):
+        s = s[1:-1].strip()
+    try:
+        return complex(s)
+    except Exception:
+        return complex(0)
+
 
 # ---------------------------
-# Data Loaders (FIXED WITH ID MAP)
+# Data Loaders (FIXED WITH ID MAP + META NUMERIC SAFE)
 # ---------------------------
 def load_tabular(tabular_path: Path) -> Tuple[pd.DataFrame, List[str], List[str]]:
     if not tabular_path.exists():
         raise FileNotFoundError(f"Tabular file not found: {tabular_path}")
 
     df = pd.read_csv(tabular_path)
-    
-    # === 【关键修复】: 从 unique_player_id.csv 合并名字 ===
+
+    # === Merge player_name from unique_player_id.csv if missing ===
     if "player_name" not in df.columns:
         print("ℹ️  'player_name' missing. Merging from unique_player_id.csv...")
         if PLAYER_ID_MAP.exists():
             try:
-                # 读取映射文件
                 name_map = pd.read_csv(PLAYER_ID_MAP)
-                # 你的文件列名是 Player_id 和 Player，需要标准化
+                # normalize columns: Player_id -> player_id, Player -> player_name
                 name_map = name_map.rename(columns={"Player_id": "player_id", "Player": "player_name"})
-                
-                # 确保 player_id 是字符串以便合并
+
                 name_map["player_id"] = name_map["player_id"].astype(str)
                 df["player_id"] = df["player_id"].astype(str)
-                
-                # 去重防止膨胀 (以防 ID 重复)
+
                 name_map = name_map.drop_duplicates(subset="player_id")
-                
-                # 左连接合并
                 df = df.merge(name_map[["player_id", "player_name"]], on="player_id", how="left")
-                
-                # 填补仍未找到的名字
+
                 df["player_name"] = df["player_name"].fillna("Unknown")
                 print(f"   > Merged names successfully. Unknowns: {df['player_name'].eq('Unknown').sum()}")
-                
             except Exception as e:
                 print(f"   ! Error reading ID Map: {e}. Using 'Unknown'.")
                 df["player_name"] = "Unknown"
         else:
             print(f"   ! ID Map not found at {PLAYER_ID_MAP}. Using 'Unknown'.")
             df["player_name"] = "Unknown"
-    # === 【修复结束】 ===
 
+    # On-court columns from your project helper
     raw_oncourt = get_oncourt_cols(df)
-    
-    stats_cols = [c for c in raw_oncourt if not any(k in c.lower() for k in _FORBIDDEN_KEYWORDS) and "salary" not in c.lower()]
+
+    # Remove award_/injury_ from on-court and anything salary-like
+    stats_cols = [
+        c for c in raw_oncourt
+        if not any(k in c.lower() for k in _FORBIDDEN_KEYWORDS) and "salary" not in c.lower()
+    ]
+
     used_cols = set(stats_cols + ID_COLS + [TARGET_COL] + TIME_FEATS)
     potential_meta = [c for c in df.columns if c not in used_cols]
-    meta_cols = [c for c in potential_meta if any(k in c.lower() for k in _META_KEYWORDS) and not any(k in c.lower() for k in _FORBIDDEN_KEYWORDS)]
 
-    LEAKAGE_COLS = ["salary", "salary_usd", "salary_cap", "cap_hit", "salary_cap_ratio", "log_salary_cap_ratio", "salary_cap_equiv", "sign_trade_bonus", "incentive_likely", "incentive_unlikely"]
+    meta_cols = [
+        c for c in potential_meta
+        if any(k in c.lower() for k in _META_KEYWORDS) and not any(k in c.lower() for k in _FORBIDDEN_KEYWORDS)
+    ]
+
+    # Explicit leakage columns (remove from both stats/meta)
+    LEAKAGE_COLS = [
+        "salary", "salary_usd", "salary_cap", "cap_hit", "salary_cap_ratio", "log_salary_cap_ratio",
+        "salary_cap_equiv", "sign_trade_bonus", "incentive_likely", "incentive_unlikely"
+    ]
     stats_cols = [c for c in stats_cols if c not in LEAKAGE_COLS]
     meta_cols = [c for c in meta_cols if c not in LEAKAGE_COLS]
 
+    # Ensure time feats exist
     for tf in TIME_FEATS:
-        if tf not in df.columns: df[tf] = 0.0
+        if tf not in df.columns:
+            df[tf] = 0.0
+
+    # --- NEW: Keep meta cols numeric-only so median imputer won't crash ---
+    # (team_abbr / agent_name-like strings should NOT be used here unless you add encoding)
+    meta_cols = [c for c in meta_cols if pd.api.types.is_numeric_dtype(df[c])]
 
     keep_cols = ID_COLS + [TARGET_COL] + stats_cols + meta_cols + TIME_FEATS
-    # 双重保险
     keep_cols = [c for c in keep_cols if c in df.columns]
-    
+
     df = df[keep_cols].dropna(subset=[TARGET_COL]).copy()
-    
+
     df["player_id"] = df["player_id"].astype(str)
     df["season"] = df["season"].astype(int)
     for tf in TIME_FEATS:
@@ -185,9 +205,11 @@ def impute_time_feats_inplace(df: pd.DataFrame, time_cols: List[str]):
     for c in time_cols:
         if c in df.columns:
             med = df.loc[train_mask, c].median()
-            if pd.isna(med): med = 0
+            if pd.isna(med):
+                med = 0
             df[c] = df[c].fillna(med)
     return df
+
 
 # ---------------------------
 # Embedding Loaders
@@ -200,10 +222,12 @@ def load_embedding_csv(emb_path: Path, allowed_players: Set[str]) -> Tuple[pd.Da
     if "season" in emb.columns:
         emb["season"] = pd.to_numeric(emb["season"], errors="coerce").fillna(-1).astype(int)
         merge_keys = ["player_id", "season"]
-        if emb.duplicated(subset=merge_keys).any(): emb = emb.drop_duplicates(subset=merge_keys)
+        if emb.duplicated(subset=merge_keys).any():
+            emb = emb.drop_duplicates(subset=merge_keys)
     else:
         merge_keys = ["player_id"]
-        if emb.duplicated(subset="player_id").any(): emb = emb.drop_duplicates(subset="player_id")
+        if emb.duplicated(subset="player_id").any():
+            emb = emb.drop_duplicates(subset="player_id")
 
     emb_cols = [c for c in emb.columns if c.startswith("e")]
     if not emb_cols:
@@ -220,12 +244,14 @@ def load_embedding_csv(emb_path: Path, allowed_players: Set[str]) -> Tuple[pd.Da
         return out, re_cols + im_cols, merge_keys
 
     out = emb[merge_keys + emb_cols].copy()
-    for c in emb_cols: out[c] = pd.to_numeric(out[c], errors="coerce")
+    for c in emb_cols:
+        out[c] = pd.to_numeric(out[c], errors="coerce")
     return out, emb_cols, merge_keys
 
 def build_v2_full_df(pt_path: Path, mm_path: Path, br_path: Path) -> Tuple[pd.DataFrame, List[str], List[str]]:
-    if not pt_path.exists(): raise FileNotFoundError(f"{pt_path} not found")
-    
+    if not pt_path.exists():
+        raise FileNotFoundError(f"{pt_path} not found")
+
     ckpt = torch.load(pt_path, map_location="cpu")
     Z = None
     if torch.is_tensor(ckpt):
@@ -235,31 +261,33 @@ def build_v2_full_df(pt_path: Path, mm_path: Path, br_path: Path) -> Tuple[pd.Da
             Z = ckpt["node_embeddings"]
             if isinstance(Z, dict) and "node_embeddings" in Z:
                 Z = Z["node_embeddings"]
-    
+
     if Z is None or not torch.is_tensor(Z):
         raise ValueError(f"Could not extract tensor from {pt_path}")
 
     Z = Z.detach().cpu().numpy()
     dim = Z.shape[1]
-    
-    mm = pd.read_csv(mm_path); mm.columns = [c.lower().strip() for c in mm.columns]
+
+    mm = pd.read_csv(mm_path)
+    mm.columns = [c.lower().strip() for c in mm.columns]
     node_map = dict(zip(mm["node_id"].astype(str), mm["idx"].astype(int)))
-    
-    br = pd.read_csv(br_path); br.columns = [c.lower().strip() for c in br.columns]
+
+    br = pd.read_csv(br_path)
+    br.columns = [c.lower().strip() for c in br.columns]
     node_col = next(c for c in br.columns if c in ["node_id", "element_id", "id"])
-    
+
     br["player_id"] = br["player_id"].astype(str)
     br["season"] = pd.to_numeric(br["season"], errors="coerce").fillna(-1).astype(int)
     br["node_idx"] = br[node_col].astype(str).map(node_map)
     br = br.dropna(subset=["node_idx"]).copy()
     br["node_idx"] = br["node_idx"].astype(int)
-    
+
     br = br[(br["node_idx"] >= 0) & (br["node_idx"] < Z.shape[0])].copy()
-    
+
     E = Z[br["node_idx"].values]
     cols = [f"e{i}" for i in range(dim)]
     df_emb = pd.DataFrame(E, columns=cols)
-    
+
     out = pd.concat([br[["player_id", "season"]].reset_index(drop=True), df_emb], axis=1)
     return out, cols, ["player_id", "season"]
 
@@ -269,33 +297,34 @@ def get_test_season_players(emb_df: pd.DataFrame, merge_keys: List[str]) -> Set[
     else:
         return set(emb_df["player_id"].astype(str))
 
+
 # ---------------------------
 # Models (Strict Protocol)
 # ---------------------------
 def run_models_strict(
-    train_full: pd.DataFrame, 
-    val: pd.DataFrame, 
-    test: pd.DataFrame, 
-    feature_cols: List[str], 
+    train_full: pd.DataFrame,
+    val: pd.DataFrame,
+    test: pd.DataFrame,
+    feature_cols: List[str],
     seed: int,
     out_dir: Optional[Path] = None,
     setting_name: str = ""
 ) -> List[Dict]:
-    
+
     train_combined = pd.concat([train_full, val], axis=0)
-    
+
     imp_search = SimpleImputer(strategy="median")
     X_train_search = imp_search.fit_transform(train_full[feature_cols].values)
     y_train_search = train_full[TARGET_COL].values
     X_val_search = imp_search.transform(val[feature_cols].values)
     y_val_search = val[TARGET_COL].values
-    
+
     imp_final = SimpleImputer(strategy="median")
     X_combined = imp_final.fit_transform(train_combined[feature_cols].values)
     y_combined = train_combined[TARGET_COL].values
     X_test = imp_final.transform(test[feature_cols].values)
     y_test = test[TARGET_COL].values
-    
+
     results = []
 
     if out_dir:
@@ -312,7 +341,6 @@ def run_models_strict(
     results.append(res_rf)
 
     if out_dir:
-        # ID_COLS includes player_name now!
         res_df = test[ID_COLS].copy()
         res_df["y_true"] = y_test
         res_df["y_pred"] = pred_rf
@@ -324,7 +352,7 @@ def run_models_strict(
         n_estimators=5000, learning_rate=0.03, max_depth=6, subsample=0.8,
         colsample_bytree=0.8, n_jobs=-1, random_state=seed, early_stopping_rounds=100
     )
-    
+
     if len(X_val_search) < 20:
         best_n = 500
     else:
@@ -334,12 +362,12 @@ def run_models_strict(
             verbose=False
         )
         best_n = int(xgb_search.best_iteration) + 1
-    
+
     xgb_final = xgb.XGBRegressor(
         n_estimators=best_n, learning_rate=0.03, max_depth=6, subsample=0.8,
         colsample_bytree=0.8, n_jobs=-1, random_state=seed
     )
-    
+
     xgb_final.fit(X_combined, y_combined)
     pred_xgb = xgb_final.predict(X_test)
     res_xgb = eval_reg(y_test, pred_xgb)
@@ -365,26 +393,29 @@ def evaluate_setting(
     setting_name: str,
     seed: int,
     use_emb: bool,
-    baseline_test_keys: Set[Tuple[str, int]], 
+    baseline_test_keys: Set[Tuple[str, int]],
     emb_cache: Optional[pd.DataFrame] = None,
     emb_cols: Optional[List[str]] = None,
     merge_keys: Optional[List[str]] = None,
-    out_dir: Optional[Path] = None
+    out_dir: Optional[Path] = None,
+    use_meta: bool = False,   # NEW
 ) -> List[Dict]:
-    
+
     df = df_base.copy()
-    current_emb_cols = []
-    
+    current_emb_cols: List[str] = []
+
     if use_emb:
         assert emb_cache is not None
+        assert emb_cols is not None
+        assert merge_keys is not None
         df = df.merge(emb_cache, on=merge_keys, how="inner")
         current_emb_cols = emb_cols
         df[current_emb_cols] = df[current_emb_cols].fillna(0)
 
     df = impute_time_feats_inplace(df, time_cols)
     train, val, test = split_time_strict(df)
-    
-    # Strict Check
+
+    # Strict Check: enforce identical test set keys for all settings
     current_test_keys = set(zip(test["player_id"].astype(str), test["season"].astype(int)))
     if current_test_keys != baseline_test_keys:
         missing = baseline_test_keys - current_test_keys
@@ -393,24 +424,27 @@ def evaluate_setting(
         raise ValueError(msg)
 
     feats = stats_cols + time_cols
-    if use_emb: feats += current_emb_cols
-    
-    out = []
-    
+    if use_meta:
+        feats += meta_cols
+    if use_emb:
+        feats += current_emb_cols
+
+    out: List[Dict] = []
+
     # Overall
     res_list = run_models_strict(
-        train, val, test, feats, seed, 
+        train, val, test, feats, seed,
         out_dir=out_dir, setting_name=setting_name
     )
     for r in res_list:
         r.update({"setting": setting_name, "seed": seed, "is_cold_start": False, "n_test": len(test)})
         out.append(r)
-    
+
     # Cold Start
     if EVAL_COLD_START_2024:
         train_full_hist = pd.concat([train, val], axis=0)
         cold_test = cold_start_2024_subset(train_full_hist, test)
-        
+
         if len(cold_test) >= COLD_START_MIN_ROWS:
             res_cold = run_models_strict(
                 train, val, cold_test, feats, seed,
@@ -419,7 +453,7 @@ def evaluate_setting(
             for r in res_cold:
                 r.update({"setting": setting_name + " (Cold)", "seed": seed, "is_cold_start": True, "n_test": len(cold_test)})
                 out.append(r)
-    
+
     return out
 
 
@@ -427,16 +461,25 @@ def evaluate_setting(
 # Main
 # ---------------------------
 def main():
-    print("=== FINAL STRICT EVAL v3 (Fixed): The Paper Protocol ===")
+    print("=== FINAL STRICT EVAL v3 (Fixed + On/Off Baseline): The Paper Protocol ===")
     ts = time.strftime("%Y%m%d_%H%M%S")
     out_dir = OUT_ROOT / ts
     _ensure_dir(out_dir)
 
     # 1. Load Tabular
     df_tab, stats_cols, meta_cols = load_tabular(TAB)
-    
+
+    # Persist column inventories for paper/appendix (helps answer: what is off-court?)
+    try:
+        (out_dir / "stats_cols_used.txt").write_text("\n".join(stats_cols), encoding="utf-8")
+        (out_dir / "meta_cols_used_numeric.txt").write_text("\n".join(meta_cols), encoding="utf-8")
+    except Exception as e:
+        print(f"[Warn] Could not write col inventories: {e}")
+
+    print(f"[Tabular] stats_cols={len(stats_cols)} meta_cols(numeric)={len(meta_cols)} time_feats={TIME_FEATS}")
+
     # 2. Register Embeddings
-    emb_data = {} 
+    emb_data: Dict[str, Tuple[pd.DataFrame, List[str], List[str]]] = {}
 
     # CSVs
     csv_paths = {
@@ -459,7 +502,8 @@ def main():
         "V2_Full_MG": V2_FULL_MG_PT
     }
     for name, p in pt_paths.items():
-        if "REPLACE" in str(p): continue
+        if "REPLACE" in str(p):
+            continue
         if p.exists():
             try:
                 print(f"Loading {name} (PT)...")
@@ -475,7 +519,7 @@ def main():
     # 3. Compute Strict Intersection
     print("\nComputing Intersection (Players valid for 2024 Test)...")
     valid_test_players = set(df_tab.loc[df_tab["season"] == TEST_SEASON, "player_id"].astype(str))
-    
+
     for name, (edf, _, keys) in emb_data.items():
         players_in_emb = get_test_season_players(edf, keys)
         before = len(valid_test_players)
@@ -491,34 +535,45 @@ def main():
     print(f"Target Test Rows: {len(BASELINE_TEST_KEYS)}")
 
     # 4. Run Loop
-    results = []
-    
+    results: List[Dict] = []
+
     for seed in SEEDS:
         print(f"\n--- Seed {seed} ---")
-        
-        # Baseline
+
+        # Baseline (unchanged)
         results += evaluate_setting(
             df_common, stats_cols, meta_cols, TIME_FEATS,
             setting_name="Baseline (Stats+Time)", seed=seed,
             use_emb=False, baseline_test_keys=BASELINE_TEST_KEYS,
-            out_dir=out_dir
+            out_dir=out_dir,
+            use_meta=False
         )
-        
-        # All Embeddings
+
+        # NEW: On-court + Off-court tabular baseline (numeric meta only)
+        results += evaluate_setting(
+            df_common, stats_cols, meta_cols, TIME_FEATS,
+            setting_name="Baseline (Stats+Time+Meta)", seed=seed,
+            use_emb=False, baseline_test_keys=BASELINE_TEST_KEYS,
+            out_dir=out_dir,
+            use_meta=True
+        )
+
+        # All Embeddings (UNCHANGED behavior: Stats+Time + Embeddings only)
         for name, (edf, cols, keys) in emb_data.items():
             edf_small = edf[edf["player_id"].isin(valid_test_players)].copy()
-            
+
             results += evaluate_setting(
                 df_common, stats_cols, meta_cols, TIME_FEATS,
-                f"{name} + Stats", seed=seed,
+                setting_name=f"{name} + Stats", seed=seed,
                 use_emb=True, emb_cache=edf_small, emb_cols=cols, merge_keys=keys,
                 baseline_test_keys=BASELINE_TEST_KEYS,
-                out_dir=out_dir
+                out_dir=out_dir,
+                use_meta=False  # keep unchanged to avoid affecting prior model comparisons
             )
 
     # 5. Summarize
     df_res = pd.DataFrame(results)
-    
+
     grp = df_res.groupby(["setting", "model_type"], as_index=False)
     summ = grp.agg(
         RMSE_mean=("RMSE", "mean"), RMSE_std=("RMSE", "std"),

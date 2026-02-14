@@ -1,0 +1,16 @@
+draft_is_first_round
+draft_is_second_round
+undrafted_flag
+agent_name
+agent_client_count
+agent_name_all
+agent_is_top
+team_value_usd
+team_value_pct
+team_big_market_flag
+team_abbr
+draft_year
+round
+round_pick
+overall_pick
+drafthe Year
