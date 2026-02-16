@@ -342,6 +342,19 @@ def load_training_table(level: Literal["level0", "level1"] = "level1") -> pd.Dat
 def main():
     df = build_level1_training_table()
     print("Level1 shape:", df.shape)
+     # ✅ 强制语义检查（保存前就能抓到错位）
+    assert df["team_abbr"].dtype == object, df["team_abbr"].head()
+    assert pd.api.types.is_numeric_dtype(df["log1p_PTS"]), df["log1p_PTS"].head()
+    assert pd.api.types.is_numeric_dtype(df["FTA"]), df.filter(like="FT").head()
+    assert df["agent_name"].dtype == object, df["agent_name"].head()
+    assert df["city"].dtype == object, df["city"].head()
+
+    
+    # ✅ 快速自检：看几列内容是否对齐
+    print(df[["team_abbr","log1p_PTS","FTA","agent_name","city","state"]].head(3))
+    print(df[["team_abbr","log1p_PTS","FTA"]].dtypes)
+
+
     out = Path("data/processed/training_level1_full.csv")
     out.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False)
