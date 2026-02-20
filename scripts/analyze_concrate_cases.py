@@ -3,38 +3,47 @@ import numpy as np
 from pathlib import Path
 
 # ================= CONFIG =================
-PRED_DIR = Path("runs/final_eval_strict_v3/20260213_131005/predictions")
+PRED_DIR = Path("runs/final_eval_strict_v3/20260216_160101/predictions")
 
 SEED = 0
 INV_MODE = "log1p"
 
 # --- reference baselines ---
-BASE_FILE = f"predictions_Baseline_StatsplusTime_RandomForest_seed{SEED}.csv"
-BASE_META_FILE = f"predictions_Baseline_StatsplusTimeplusMeta_RandomForest_seed{SEED}.csv"
+BASE_FILE = f"predictions_Baseline_(StatsplusTime)_RandomForest_seed{SEED}.csv"
+BASE_META_FILE = f"predictions_Baseline_(StatsplusTimeplusMeta)_RandomForest_seed{SEED}.csv"
 
-# --- thresholds ---
+# --- thresholds (Stats+Time reference) ---
 RESCUE_MIN = 500_000          # 至少救回 $0.5M
 BASE_ERR_MIN = 1_000_000      # baseline 原本误差至少 $1M（避免捡漏）
+
+# --- thresholds (Stats+Time+Meta reference) ---
+RESCUE_MIN_META = 500_000     # 仍然要求至少救回 $0.5M
+BASE_ERR_MIN_META = 700_000   # Strong baseline 更强：适当降低门槛，否则容易没有样本
+
+# --- Unique insight thresholds ---
 UNIQUE_RESCUE_MIN = 1_500_000 # Unique insight: 我至少救回 $1.5M
 UNIQUE_ADV_MIN = 500_000      # Unique insight: 比其他模型最好救回还多 $0.5M
 MIN_EXAMPLES_PER_MODEL = 3    # 每个模型至少几个例子（尽量）
 
-# --- candidate models ---
+# --- candidate graph models ONLY (no tabular baseline here) ---
 MODELS = {
-    "Tabular_OnOff": f"predictions_Baseline_StatsplusTimeplusMeta_RandomForest_seed{SEED}.csv",
-    "RotatE":        f"predictions_RotatE_plus_Stats_RandomForest_seed{SEED}.csv",
-    "Node2Vec":      f"predictions_Node2Vec_plus_Stats_RandomForest_seed{SEED}.csv",
-    "V1":            f"predictions_V1_plus_Stats_RandomForest_seed{SEED}.csv",
-    "V2_Ind":        f"predictions_V2_Ind_plus_Stats_RandomForest_seed{SEED}.csv",
-    "V2_Trans":      f"predictions_V2_Trans_plus_Stats_RandomForest_seed{SEED}.csv",
-    "V2_Full":       f"predictions_V2_Full_MG_plus_Stats_RandomForest_seed{SEED}.csv",
+    "RotatE":   f"predictions_RotatE_plus_Stats_RandomForest_seed{SEED}.csv",
+    "Node2Vec": f"predictions_Node2Vec_plus_Stats_RandomForest_seed{SEED}.csv",
+    "V1":       f"predictions_V1_plus_Stats_RandomForest_seed{SEED}.csv",
+    "V2_Ind":   f"predictions_V2_Ind_plus_Stats_RandomForest_seed{SEED}.csv",
+    "V2_Trans": f"predictions_V2_Trans_plus_Stats_RandomForest_seed{SEED}.csv",
+    "V2_Full":  f"predictions_V2_Full_MG_plus_Stats_RandomForest_seed{SEED}.csv",
 }
 
-# run rescue relative to both baselines
+# --- baselines we will use as reference points (two views) ---
 REF_BASELINES = {
     "Stats+Time": BASE_FILE,
     "Stats+Time+Meta": BASE_META_FILE,
 }
+
+# --- optional: also analyze "Strong baseline rescues Weak baseline" (baseline-to-baseline) ---
+ANALYZE_TABULAR_ONOFF = True  # 如果你想把 on+off vs on 作为一类 rescue 例子输出
+
 
 # ================= Utilities =================
 
@@ -79,32 +88,22 @@ def categorize_rescue(row: pd.Series) -> str:
     base = row["pred_base"]
     pred = row["pred_model"]
 
-    # boundary: baseline already essentially exact -> skip
+    # baseline already essentially exact -> mark (we'll usually not pick these)
     if abs(act - base) < 10_000:
         return "Exact (Skip)"
 
     main_type = "Underrated" if act > base else "Overrated"
-
-    # overshoot if model crosses the true value to the other side
     is_overshoot = (base - act) * (pred - act) < 0
     sub_type = "Overshoot" if is_overshoot else "Precision"
-
     return f"{main_type} ({sub_type})"
 
-def select_representative_players(
-    success_cases: pd.DataFrame,
-    min_examples: int = 3,
-) -> pd.DataFrame:
+def select_representative_players(success_cases: pd.DataFrame, min_examples: int = 3) -> pd.DataFrame:
     """
     Select representative players for one model under one reference baseline.
 
     Protocol:
       A) Category picks: for each of 4 rescue types, select top-rescue case.
       B) Fallback: if < min_examples, fill with remaining top-rescue cases.
-    Produces:
-      selection_method: Category / Fallback
-      selection_bucket: which rescue_type (or TopRescue)
-      selection_rank: 1..K
     """
     if success_cases.empty:
         return success_cases.head(0).copy()
@@ -136,9 +135,11 @@ def select_representative_players(
     # B) Fallback
     if len(picked_rows) < min_examples:
         needed = min_examples - len(picked_rows)
-        remaining = success_cases[~success_cases["player_id"].isin(seen_pids)] \
-            .sort_values("rescue", ascending=False) \
+        remaining = (
+            success_cases[~success_cases["player_id"].isin(seen_pids)]
+            .sort_values("rescue", ascending=False)
             .head(needed)
+        )
         for _, cand in remaining.iterrows():
             pid = cand["player_id"]
             if pid in seen_pids:
@@ -153,12 +154,22 @@ def select_representative_players(
     out["selection_rank"] = np.arange(1, len(out) + 1)
     return out
 
+def thresholds_for_ref(ref_name: str) -> tuple[float, float]:
+    """Return (RESCUE_MIN, BASE_ERR_MIN) per reference baseline."""
+    if ref_name == "Stats+Time+Meta":
+        return RESCUE_MIN_META, BASE_ERR_MIN_META
+    return RESCUE_MIN, BASE_ERR_MIN
+
+
 # ================= Core analysis per reference baseline =================
 
 def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     print("\n" + "=" * 70)
     print(f"🧭 Rescue Reference Baseline = {ref_name}  |  file = {ref_baseline_file}")
     print("=" * 70)
+
+    rescue_min, base_err_min = thresholds_for_ref(ref_name)
+    print(f"   Thresholds: RESCUE_MIN={fmt(rescue_min)} | BASE_ERR_MIN={fmt(base_err_min)}")
 
     # Load reference baseline
     base_path = PRED_DIR / ref_baseline_file
@@ -173,10 +184,68 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
     all_examples = []
     coverage_stats = []
 
+    # -------- optional: tabular-onoff rescue over tabular-on (only when ref is Stats+Time) ----------
+    if ANALYZE_TABULAR_ONOFF and ref_name == "Stats+Time":
+        print(f"\n🟣 [Stats+Time] Analyzing: Tabular_OnOff (Stats+Time+Meta) ...")
+        df_tab_onoff = load_pred_file(PRED_DIR / BASE_META_FILE)
+        if df_tab_onoff is not None:
+            merged = (
+                df_base_core
+                .merge(df_tab_onoff[["player_id", "season", "salary_pred_usd"]], on=["player_id", "season"], how="inner")
+                .rename(columns={"salary_pred_usd": "pred_model"})
+            )
+            merged["err_base"] = (merged["salary_true_usd"] - merged["pred_base"]).abs()
+            merged["err_model"] = (merged["salary_true_usd"] - merged["pred_model"]).abs()
+            merged["rescue"] = merged["err_base"] - merged["err_model"]
+
+            success_cases = merged[(merged["rescue"] > rescue_min) & (merged["err_base"] > base_err_min)].copy()
+            n_cov = len(merged)
+            n_succ = len(success_cases)
+            rate = (n_succ / n_cov) if n_cov > 0 else 0.0
+
+            coverage_stats.append({
+                "RefBaseline": ref_name,
+                "Model": "Tabular_OnOff",
+                "Coverage": int(n_cov),
+                "Success_Cases": int(n_succ),
+                "Success_Rate": float(rate),
+                "Success_Rate_Pct": f"{rate*100:.1f}%"
+            })
+            print(f"   Coverage: {n_cov} | Success: {n_succ} ({rate*100:.1f}%)")
+
+            if not success_cases.empty:
+                success_cases["rescue_type"] = success_cases.apply(categorize_rescue, axis=1)
+                selected_df = select_representative_players(success_cases, min_examples=MIN_EXAMPLES_PER_MODEL)
+                for _, row in selected_df.iterrows():
+                    delta = row["pred_model"] - row["pred_base"]
+                    all_examples.append({
+                        "RefBaseline": ref_name,
+                        "Model": "Tabular_OnOff",
+                        "Type": row["rescue_type"],
+                        "Selection_Method": row.get("selection_method", "Category"),
+                        "Selection_Bucket": row.get("selection_bucket", ""),
+                        "Selection_Rank": int(row.get("selection_rank", 0)),
+                        "Player": row["player_name"],
+                        "Season": int(row["season"]),
+                        "Actual": float(row["salary_true_usd"]),
+                        "Base_Pred": float(row["pred_base"]),
+                        "Model_Pred": float(row["pred_model"]),
+                        "Delta_Pred": float(delta),
+                        "Base_Err": float(row["err_base"]),
+                        "Model_Err": float(row["err_model"]),
+                        "Rescue_Amount": float(row["rescue"]),
+                        "Model_Coverage": int(n_cov),
+                    })
+                    print(f"   + Selected(R{int(row.get('selection_rank',0))}): {row['player_name']} "
+                          f"[{row['rescue_type']}] (+{fmt(row['rescue'])})")
+        else:
+            print("   ⚠️ Tabular_OnOff file missing; skip.")
+
+    # -------- graph models ----------
     for model_name, filename in MODELS.items():
-        # Skip if model equals reference baseline
+        # Skip if model equals reference baseline (shouldn't happen now, but keep safe)
         if filename == ref_baseline_file:
-            print(f"\n⏭️  Skip: {model_name} (same as reference baseline: {ref_name})")
+            print(f"\n⏭️  Skip: {model_name} (same as reference baseline)")
             continue
 
         print(f"\n🔵 [{ref_name}] Analyzing: {model_name} ...")
@@ -194,37 +263,29 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
             })
             continue
 
-        # Merge + rename to pred_model
-        merged = pd.merge(
-            df_base_core,
-            df_model[["player_id", "season", "salary_pred_usd"]],
-            on=["player_id", "season"],
-            how="inner"
-        ).rename(columns={"salary_pred_usd": "pred_model"})
+        merged = (
+            df_base_core
+            .merge(df_model[["player_id", "season", "salary_pred_usd"]], on=["player_id", "season"], how="inner")
+            .rename(columns={"salary_pred_usd": "pred_model"})
+        )
 
-        # Metrics
         merged["err_base"] = (merged["salary_true_usd"] - merged["pred_base"]).abs()
         merged["err_model"] = (merged["salary_true_usd"] - merged["pred_model"]).abs()
         merged["rescue"] = merged["err_base"] - merged["err_model"]
 
-        # Build global rescue map
+        # Build global rescue map (for unique insights) — only among graph models
         for row in merged.itertuples(index=False):
             key = (row.player_id, row.season)
             if key not in global_rescue_map:
                 global_rescue_map[key] = {"player_name": row.player_name, "models": {}}
             global_rescue_map[key]["models"][model_name] = {
-                "rescue": row.rescue,
-                "err": row.err_model,
-                "err_base": row.err_base
+                "rescue": float(row.rescue),
+                "err": float(row.err_model),
+                "err_base": float(row.err_base)
             }
 
-        # Success filter
-        success_cases = merged[
-            (merged["rescue"] > RESCUE_MIN) &
-            (merged["err_base"] > BASE_ERR_MIN)
-        ].copy()
+        success_cases = merged[(merged["rescue"] > rescue_min) & (merged["err_base"] > base_err_min)].copy()
 
-        # Coverage stats
         n_cov = len(merged)
         n_succ = len(success_cases)
         rate = (n_succ / n_cov) if n_cov > 0 else 0.0
@@ -242,11 +303,9 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
         if success_cases.empty:
             continue
 
-        # Categorize + select reps
         success_cases["rescue_type"] = success_cases.apply(categorize_rescue, axis=1)
         selected_df = select_representative_players(success_cases, min_examples=MIN_EXAMPLES_PER_MODEL)
 
-        # Add to examples
         for _, row in selected_df.iterrows():
             delta = row["pred_model"] - row["pred_base"]
             all_examples.append({
@@ -273,21 +332,22 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
                 f"(+{fmt(row['rescue'])})"
             )
 
-    # ================= Unique Insights =================
+    # ================= Unique Insights (among graph models only) =================
     print("\n" + "=" * 60)
     print(f"🏆 Unique Insights Analysis  (RefBaseline={ref_name})")
     print("=" * 60)
 
     unique_insights_list = []
+    model_keys = list(MODELS.keys())
 
-    for target_model in MODELS.keys():
+    for target_model in model_keys:
         candidates = []
         for key, info in global_rescue_map.items():
             res_dict = info["models"]
             if target_model not in res_dict:
                 continue
 
-            known_models = [m for m in MODELS if m in res_dict]
+            known_models = [m for m in model_keys if m in res_dict]
             if len(known_models) < 2:
                 continue
 
@@ -325,8 +385,11 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
         if df_cand.empty:
             continue
 
-        hits = df_cand[df_cand["rescue_advantage"] > UNIQUE_ADV_MIN] \
-            .sort_values("rescue_advantage", ascending=False).head(3)
+        hits = (
+            df_cand[df_cand["rescue_advantage"] > UNIQUE_ADV_MIN]
+            .sort_values("rescue_advantage", ascending=False)
+            .head(3)
+        )
 
         if not hits.empty:
             print(f"\n🌟 [{target_model}] Exclusive:")
@@ -353,12 +416,14 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
     df_cov = pd.DataFrame(coverage_stats) if coverage_stats else pd.DataFrame()
     return df_examples, df_unique, df_cov
 
+
 # ================= Main =================
 
 def main():
     print("--- Configuration ---")
     print(f"PRED_DIR: {PRED_DIR}")
     print(f"Seed: {SEED} | INV_MODE: {INV_MODE}")
+    print(f"ANALYZE_TABULAR_ONOFF: {ANALYZE_TABULAR_ONOFF}")
     print("-" * 50)
 
     # Sanity check baseline files exist
