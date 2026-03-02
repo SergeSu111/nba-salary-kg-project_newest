@@ -466,7 +466,13 @@ def main():
 
     # 2. Embeddings
     emb_data = {}
-    csv_paths = { "Node2Vec": NODE2VEC, "RotatE": ROTATE, "V1": V1_PLAYER, "V2_Ind": V2_IND, "V2_Trans": V2_TRANS }
+    csv_paths = {
+        "Node2Vec": NODE2VEC,
+        "RotatE": ROTATE,
+        "V1": V1_PLAYER,
+        "V2_Ind": V2_IND,
+        "V2_Trans": V2_TRANS
+    }
     for name, p in csv_paths.items():
         if p.exists():
             print(f"Loading {name}...")
@@ -481,27 +487,47 @@ def main():
             except Exception as e:
                 print(f"[Err] {name}: {e}")
 
-    # 3. Intersection
+    # 3. Intersection (Matched Information Protocol)
     valid_test_players = set(df_tab.loc[df_tab["season"] == TEST_SEASON, "player_id"].astype(str))
     for name, (edf, _, keys) in emb_data.items():
         players_in_emb = get_test_season_players(edf, keys)
         valid_test_players = valid_test_players.intersection(players_in_emb)
-    
+
     print(f"Final Common Test Players: {len(valid_test_players)}")
-    
-    # ✅ Safety Check 2: Assert Common Population Exists
+
+    # ✅ Safety Check: Assert Common Population Exists
     if len(valid_test_players) == 0:
         raise RuntimeError("❌ CRITICAL: No common test players found! Check embedding files for 2024 coverage.")
 
+    # Build common dataset (all seasons for those players, but we'll export only 2024)
     df_common = df_tab[df_tab["player_id"].isin(valid_test_players)].copy()
-    base_test_rows = df_common[df_common["season"] == TEST_SEASON]
+
+    # Baseline test keys (strictly 2024 rows in the matched population)
+    base_test_rows = df_common[df_common["season"] == TEST_SEASON].copy()
     BASELINE_TEST_KEYS = set(zip(base_test_rows["player_id"].astype(str), base_test_rows["season"].astype(int)))
 
-    # 4. Loop
+    # 3.5 EXPORT FEATURE TABLES for Rescue Profiling (ONLY 2024)
+    feat_dir = out_dir / "feature_tables"
+    feat_dir.mkdir(parents=True, exist_ok=True)
+
+    # Only export 2024 rows from the matched population
+    feat_2024 = df_common[df_common["season"] == TEST_SEASON].copy()
+    feat_2024.to_csv(feat_dir / "features_tabular_common_test2024.csv", index=False)
+
+    # Save column lists for reproducibility / easy selection later
+    pd.Series(stats_cols).to_csv(feat_dir / "cols_stats.csv", index=False, header=False)
+    pd.Series(meta_num).to_csv(feat_dir / "cols_meta_num.csv", index=False, header=False)
+    pd.Series(meta_cat).to_csv(feat_dir / "cols_meta_cat.csv", index=False, header=False)
+    pd.Series(TIME_FEATS).to_csv(feat_dir / "cols_time.csv", index=False, header=False)
+
+    print(f"✅ Feature table exported: {feat_dir / 'features_tabular_common_test2024.csv'}")
+    print(f"   Rows (2024, matched): {len(feat_2024)}")
+
+    # 4. Loop (Evaluation)
     results = []
     for seed in SEEDS:
         print(f"\n--- Seed {seed} ---")
-        
+
         # Weak Baseline (Stats + Time)
         results += evaluate_setting(
             df_common, stats_cols, meta_num, meta_cat, TIME_FEATS,
@@ -542,6 +568,7 @@ def main():
     print("\n=== FINAL RANKING (RMSE Ascending) ===")
     print(summ.to_string(index=False))
     print(f"\nSaved to {out_dir}")
+
 
 if __name__ == "__main__":
     main()

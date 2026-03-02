@@ -1,0 +1,7 @@
+RefBaseline,Model,Eligible,Green,Red,Green_rate,Red_rate,Green_merge_miss,Red_merge_miss,Green_missing_any,Red_missing_any,Profile_rows,Profile_path
+Stats+Time+Meta,V1,307,109,138,0.3550488599348534,0.4495114006514658,0,0,0,0,93,runs\final_eval_strict_v3\20260224_143439\predictions\rescue_characteristics_2024\Stats_Time_Meta\profiles\V1__green_vs_red_profile.csv
+Stats+Time+Meta,V2_Trans,307,103,146,0.3355048859934853,0.4755700325732899,0,0,0,0,93,runs\final_eval_strict_v3\20260224_143439\predictions\rescue_characteristics_2024\Stats_Time_Meta\profiles\V2_Trans__green_vs_red_profile.csv
+Stats+Time+Meta,RotatE,307,98,109,0.31921824104234525,0.3550488599348534,0,0,0,0,93,runs\final_eval_strict_v3\20260224_143439\predictions\rescue_characteristics_2024\Stats_Time_Meta\profiles\RotatE__green_vs_red_profile.csv
+Stats+Time+Meta,Node2Vec,307,85,112,0.2768729641693811,0.36482084690553745,0,0,0,0,93,runs\final_eval_strict_v3\20260224_143439\predictions\rescue_characteristics_2024\Stats_Time_Meta\profiles\Node2Vec__green_vs_red_profile.csv
+Stats+Time+Meta,V2_Full,307,84,112,0.2736156351791531,0.36482084690553745,0,0,0,0,93,runs\final_eval_strict_v3\20260224_143439\predictions\rescue_characteristics_2024\Stats_Time_Meta\profiles\V2_Full__green_vs_red_profile.csv
+Stats+Time+Meta,V2_Ind,307,69,161,0.2247557003257329,0.5244299674267101,0,0,0,0,93,runs\final_eval_strict_v3\20260224_143439\predictions\rescue_characteristics_2024\Stats_Time_Meta\profiles\V2_Ind__green_vs_red_profile.csv

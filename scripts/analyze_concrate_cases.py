@@ -14,16 +14,16 @@ BASE_META_FILE = f"predictions_Baseline_(StatsplusTimeplusMeta)_RandomForest_see
 
 # --- thresholds (Stats+Time reference) ---
 RESCUE_MIN = 500_000          # 至少救回 $0.5M
-BASE_ERR_MIN = 1_000_000      # baseline 原本误差至少 $1M（避免捡漏）
+BASE_ERR_MIN = 1_000_000      # baseline 原本误差至少 $1M（Eligible Outliers 门槛）
 
 # --- thresholds (Stats+Time+Meta reference) ---
 RESCUE_MIN_META = 500_000     # 仍然要求至少救回 $0.5M
-BASE_ERR_MIN_META = 700_000   # Strong baseline 更强：适当降低门槛，否则容易没有样本
+BASE_ERR_MIN_META = 700_000   # Strong baseline 更强：适当降低门槛
 
 # --- Unique insight thresholds ---
 UNIQUE_RESCUE_MIN = 1_500_000 # Unique insight: 我至少救回 $1.5M
 UNIQUE_ADV_MIN = 500_000      # Unique insight: 比其他模型最好救回还多 $0.5M
-MIN_EXAMPLES_PER_MODEL = 3    # 每个模型至少几个例子（尽量）
+MIN_EXAMPLES_PER_MODEL = 3    # 每个模型至少几个例子（正面和反面都适用）
 
 # --- candidate graph models ONLY (no tabular baseline here) ---
 MODELS = {
@@ -42,7 +42,7 @@ REF_BASELINES = {
 }
 
 # --- optional: also analyze "Strong baseline rescues Weak baseline" (baseline-to-baseline) ---
-ANALYZE_TABULAR_ONOFF = True  # 如果你想把 on+off vs on 作为一类 rescue 例子输出
+ANALYZE_TABULAR_ONOFF = True  # 把 on+off vs on 作为一类 rescue 例子输出
 
 
 # ================= Utilities =================
@@ -88,7 +88,6 @@ def categorize_rescue(row: pd.Series) -> str:
     base = row["pred_base"]
     pred = row["pred_model"]
 
-    # baseline already essentially exact -> mark (we'll usually not pick these)
     if abs(act - base) < 10_000:
         return "Exact (Skip)"
 
@@ -98,13 +97,7 @@ def categorize_rescue(row: pd.Series) -> str:
     return f"{main_type} ({sub_type})"
 
 def select_representative_players(success_cases: pd.DataFrame, min_examples: int = 3) -> pd.DataFrame:
-    """
-    Select representative players for one model under one reference baseline.
-
-    Protocol:
-      A) Category picks: for each of 4 rescue types, select top-rescue case.
-      B) Fallback: if < min_examples, fill with remaining top-rescue cases.
-    """
+    """Select representative players for positive rescues."""
     if success_cases.empty:
         return success_cases.head(0).copy()
 
@@ -184,7 +177,7 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
     all_examples = []
     coverage_stats = []
 
-    # -------- optional: tabular-onoff rescue over tabular-on (only when ref is Stats+Time) ----------
+    # -------- optional: tabular-onoff rescue over tabular-on ----------
     if ANALYZE_TABULAR_ONOFF and ref_name == "Stats+Time":
         print(f"\n🟣 [Stats+Time] Analyzing: Tabular_OnOff (Stats+Time+Meta) ...")
         df_tab_onoff = load_pred_file(PRED_DIR / BASE_META_FILE)
@@ -198,21 +191,38 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
             merged["err_model"] = (merged["salary_true_usd"] - merged["pred_model"]).abs()
             merged["rescue"] = merged["err_base"] - merged["err_model"]
 
-            success_cases = merged[(merged["rescue"] > rescue_min) & (merged["err_base"] > base_err_min)].copy()
-            n_cov = len(merged)
+            # TRI-STATE EVALUATION
+            eligible_mask = merged["err_base"] > base_err_min
+            eligible_cases = merged[eligible_mask].copy()
+
+            success_cases = eligible_cases[eligible_cases["rescue"] > rescue_min].copy()
+            misguidance_cases = eligible_cases[eligible_cases["rescue"] < -rescue_min].copy()
+            neutral_cases = eligible_cases[(eligible_cases["rescue"] >= -rescue_min) & (eligible_cases["rescue"] <= rescue_min)].copy()
+
+            n_eligible = len(eligible_cases)
             n_succ = len(success_cases)
-            rate = (n_succ / n_cov) if n_cov > 0 else 0.0
+            n_misguide = len(misguidance_cases)
+            n_neutral = len(neutral_cases)
+
+            rate_succ = (n_succ / n_eligible) if n_eligible > 0 else 0.0
+            rate_misguide = (n_misguide / n_eligible) if n_eligible > 0 else 0.0
+            rate_neutral = (n_neutral / n_eligible) if n_eligible > 0 else 0.0
 
             coverage_stats.append({
                 "RefBaseline": ref_name,
                 "Model": "Tabular_OnOff",
-                "Coverage": int(n_cov),
-                "Success_Cases": int(n_succ),
-                "Success_Rate": float(rate),
-                "Success_Rate_Pct": f"{rate*100:.1f}%"
+                "Eligible_Outliers": int(n_eligible),
+                "Rescue_Cases": int(n_succ),
+                "Rescue_Rate": f"{rate_succ*100:.1f}%",
+                "Misguidance_Cases": int(n_misguide),
+                "Misguidance_Rate": f"{rate_misguide*100:.1f}%",
+                "Neutral_Cases": int(n_neutral),
+                "Neutral_Rate": f"{rate_neutral*100:.1f}%",
             })
-            print(f"   Coverage: {n_cov} | Success: {n_succ} ({rate*100:.1f}%)")
+            print(f"   Eligible Outliers: {n_eligible}")
+            print(f"   + Rescue: {n_succ} ({rate_succ*100:.1f}%) | - Misguide: {n_misguide} ({rate_misguide*100:.1f}%) | = Neutral: {n_neutral} ({rate_neutral*100:.1f}%)")
 
+            # Extract Positive Rescues
             if not success_cases.empty:
                 success_cases["rescue_type"] = success_cases.apply(categorize_rescue, axis=1)
                 selected_df = select_representative_players(success_cases, min_examples=MIN_EXAMPLES_PER_MODEL)
@@ -234,16 +244,37 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
                         "Base_Err": float(row["err_base"]),
                         "Model_Err": float(row["err_model"]),
                         "Rescue_Amount": float(row["rescue"]),
-                        "Model_Coverage": int(n_cov),
+                        "Eligible_Outliers": int(n_eligible),
                     })
-                    print(f"   + Selected(R{int(row.get('selection_rank',0))}): {row['player_name']} "
-                          f"[{row['rescue_type']}] (+{fmt(row['rescue'])})")
+
+            # Extract Top Misguidance
+            if not misguidance_cases.empty:
+                worst_cases = misguidance_cases.sort_values("rescue", ascending=True).head(MIN_EXAMPLES_PER_MODEL)
+                for rank, (_, row) in enumerate(worst_cases.iterrows(), 1):
+                    delta = row["pred_model"] - row["pred_base"]
+                    all_examples.append({
+                        "RefBaseline": ref_name,
+                        "Model": "Tabular_OnOff",
+                        "Type": "Structural Misguidance (Failure)",
+                        "Selection_Method": "Top Worst",
+                        "Selection_Bucket": "Misguidance",
+                        "Selection_Rank": rank,
+                        "Player": row["player_name"],
+                        "Season": int(row["season"]),
+                        "Actual": float(row["salary_true_usd"]),
+                        "Base_Pred": float(row["pred_base"]),
+                        "Model_Pred": float(row["pred_model"]),
+                        "Delta_Pred": float(delta),
+                        "Base_Err": float(row["err_base"]),
+                        "Model_Err": float(row["err_model"]),
+                        "Rescue_Amount": float(row["rescue"]),
+                        "Eligible_Outliers": int(n_eligible),
+                    })
         else:
             print("   ⚠️ Tabular_OnOff file missing; skip.")
 
     # -------- graph models ----------
     for model_name, filename in MODELS.items():
-        # Skip if model equals reference baseline (shouldn't happen now, but keep safe)
         if filename == ref_baseline_file:
             print(f"\n⏭️  Skip: {model_name} (same as reference baseline)")
             continue
@@ -256,10 +287,13 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
             coverage_stats.append({
                 "RefBaseline": ref_name,
                 "Model": model_name,
-                "Coverage": 0,
-                "Success_Cases": 0,
-                "Success_Rate": 0.0,
-                "Success_Rate_Pct": "0.0%"
+                "Eligible_Outliers": 0,
+                "Rescue_Cases": 0,
+                "Rescue_Rate": "0.0%",
+                "Misguidance_Cases": 0,
+                "Misguidance_Rate": "0.0%",
+                "Neutral_Cases": 0,
+                "Neutral_Rate": "0.0%",
             })
             continue
 
@@ -273,7 +307,7 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
         merged["err_model"] = (merged["salary_true_usd"] - merged["pred_model"]).abs()
         merged["rescue"] = merged["err_base"] - merged["err_model"]
 
-        # Build global rescue map (for unique insights) — only among graph models
+        # Build global rescue map (for unique insights)
         for row in merged.itertuples(index=False):
             key = (row.player_id, row.season)
             if key not in global_rescue_map:
@@ -284,55 +318,92 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
                 "err_base": float(row.err_base)
             }
 
-        success_cases = merged[(merged["rescue"] > rescue_min) & (merged["err_base"] > base_err_min)].copy()
+        # ================= NEW TRI-STATE EVALUATION =================
+        eligible_mask = merged["err_base"] > base_err_min
+        eligible_cases = merged[eligible_mask].copy()
 
-        n_cov = len(merged)
+        success_cases = eligible_cases[eligible_cases["rescue"] > rescue_min].copy()
+        misguidance_cases = eligible_cases[eligible_cases["rescue"] < -rescue_min].copy()
+        neutral_cases = eligible_cases[(eligible_cases["rescue"] >= -rescue_min) & (eligible_cases["rescue"] <= rescue_min)].copy()
+
+        n_eligible = len(eligible_cases)
         n_succ = len(success_cases)
-        rate = (n_succ / n_cov) if n_cov > 0 else 0.0
+        n_misguide = len(misguidance_cases)
+        n_neutral = len(neutral_cases)
+
+        rate_succ = (n_succ / n_eligible) if n_eligible > 0 else 0.0
+        rate_misguide = (n_misguide / n_eligible) if n_eligible > 0 else 0.0
+        rate_neutral = (n_neutral / n_eligible) if n_eligible > 0 else 0.0
 
         coverage_stats.append({
             "RefBaseline": ref_name,
             "Model": model_name,
-            "Coverage": int(n_cov),
-            "Success_Cases": int(n_succ),
-            "Success_Rate": float(rate),
-            "Success_Rate_Pct": f"{rate*100:.1f}%"
+            "Eligible_Outliers": int(n_eligible),
+            "Rescue_Cases": int(n_succ),
+            "Rescue_Rate": f"{rate_succ*100:.1f}%",
+            "Misguidance_Cases": int(n_misguide),
+            "Misguidance_Rate": f"{rate_misguide*100:.1f}%",
+            "Neutral_Cases": int(n_neutral),
+            "Neutral_Rate": f"{rate_neutral*100:.1f}%",
         })
-        print(f"   Coverage: {n_cov} | Success: {n_succ} ({rate*100:.1f}%)")
+        print(f"   Eligible Outliers: {n_eligible}")
+        print(f"   + Rescue: {n_succ} ({rate_succ*100:.1f}%) | - Misguide: {n_misguide} ({rate_misguide*100:.1f}%) | = Neutral: {n_neutral} ({rate_neutral*100:.1f}%)")
+        # ============================================================
 
-        if success_cases.empty:
-            continue
+        # 1. Extract Positive Rescues
+        if not success_cases.empty:
+            success_cases["rescue_type"] = success_cases.apply(categorize_rescue, axis=1)
+            selected_df = select_representative_players(success_cases, min_examples=MIN_EXAMPLES_PER_MODEL)
 
-        success_cases["rescue_type"] = success_cases.apply(categorize_rescue, axis=1)
-        selected_df = select_representative_players(success_cases, min_examples=MIN_EXAMPLES_PER_MODEL)
+            for _, row in selected_df.iterrows():
+                delta = row["pred_model"] - row["pred_base"]
+                all_examples.append({
+                    "RefBaseline": ref_name,
+                    "Model": model_name,
+                    "Type": row["rescue_type"],
+                    "Selection_Method": row.get("selection_method", "Category"),
+                    "Selection_Bucket": row.get("selection_bucket", ""),
+                    "Selection_Rank": int(row.get("selection_rank", 0)),
+                    "Player": row["player_name"],
+                    "Season": int(row["season"]),
+                    "Actual": float(row["salary_true_usd"]),
+                    "Base_Pred": float(row["pred_base"]),
+                    "Model_Pred": float(row["pred_model"]),
+                    "Delta_Pred": float(delta),
+                    "Base_Err": float(row["err_base"]),
+                    "Model_Err": float(row["err_model"]),
+                    "Rescue_Amount": float(row["rescue"]),
+                    "Eligible_Outliers": int(n_eligible),
+                })
+                print(f"   ✅ Selected(R{int(row.get('selection_rank',0))}): {row['player_name']} "
+                      f"[{row['rescue_type']}] (+{fmt(row['rescue'])})")
 
-        for _, row in selected_df.iterrows():
-            delta = row["pred_model"] - row["pred_base"]
-            all_examples.append({
-                "RefBaseline": ref_name,
-                "Model": model_name,
-                "Type": row["rescue_type"],
-                "Selection_Method": row.get("selection_method", "Category"),
-                "Selection_Bucket": row.get("selection_bucket", ""),
-                "Selection_Rank": int(row.get("selection_rank", 0)),
-                "Player": row["player_name"],
-                "Season": int(row["season"]),
-                "Actual": float(row["salary_true_usd"]),
-                "Base_Pred": float(row["pred_base"]),
-                "Model_Pred": float(row["pred_model"]),
-                "Delta_Pred": float(delta),
-                "Base_Err": float(row["err_base"]),
-                "Model_Err": float(row["err_model"]),
-                "Rescue_Amount": float(row["rescue"]),
-                "Model_Coverage": int(n_cov),
-            })
-            print(
-                f"   + Selected(R{int(row.get('selection_rank',0))}): {row['player_name']} "
-                f"[{row['rescue_type']}] ({row.get('selection_method','')}/{row.get('selection_bucket','')}) "
-                f"(+{fmt(row['rescue'])})"
-            )
+        # 2. Extract Top Misguidance
+        if not misguidance_cases.empty:
+            worst_cases = misguidance_cases.sort_values("rescue", ascending=True).head(MIN_EXAMPLES_PER_MODEL)
+            for rank, (_, row) in enumerate(worst_cases.iterrows(), 1):
+                delta = row["pred_model"] - row["pred_base"]
+                all_examples.append({
+                    "RefBaseline": ref_name,
+                    "Model": model_name,
+                    "Type": "Structural Misguidance (Failure)",
+                    "Selection_Method": "Top Worst",
+                    "Selection_Bucket": "Misguidance",
+                    "Selection_Rank": rank,
+                    "Player": row["player_name"],
+                    "Season": int(row["season"]),
+                    "Actual": float(row["salary_true_usd"]),
+                    "Base_Pred": float(row["pred_base"]),
+                    "Model_Pred": float(row["pred_model"]),
+                    "Delta_Pred": float(delta),
+                    "Base_Err": float(row["err_base"]),
+                    "Model_Err": float(row["err_model"]),
+                    "Rescue_Amount": float(row["rescue"]), 
+                    "Eligible_Outliers": int(n_eligible),
+                })
+                print(f"   ❌ Misguidance(R{rank}): {row['player_name']} ({fmt(row['rescue'])})")
 
-    # ================= Unique Insights (among graph models only) =================
+    # ================= Unique Insights =================
     print("\n" + "=" * 60)
     print(f"🏆 Unique Insights Analysis  (RefBaseline={ref_name})")
     print("=" * 60)
@@ -376,8 +447,6 @@ def run_one_reference(ref_name: str, ref_baseline_file: str) -> tuple[pd.DataFra
             continue
 
         df_cand = pd.DataFrame(candidates)
-
-        # Dual thresholds: big rescue + near-best absolute error
         df_cand = df_cand[
             (df_cand["my_rescue"] > UNIQUE_RESCUE_MIN) &
             (df_cand["my_err"] <= df_cand["min_other_err"] + 10_000)
@@ -426,7 +495,6 @@ def main():
     print(f"ANALYZE_TABULAR_ONOFF: {ANALYZE_TABULAR_ONOFF}")
     print("-" * 50)
 
-    # Sanity check baseline files exist
     for ref_name, ref_file in REF_BASELINES.items():
         p = PRED_DIR / ref_file
         if not p.exists():
@@ -447,7 +515,6 @@ def main():
             all_cov_list.append(df_cov)
 
     # ===== Save outputs =====
-    # 1) Concrete examples
     if all_ex_list:
         df_ex_all = pd.concat(all_ex_list, axis=0, ignore_index=True)
         df_ex_all.to_csv(PRED_DIR / "summary_concrete_examples_numeric__both_refs.csv", index=False)
@@ -457,12 +524,8 @@ def main():
         for col in money_cols:
             df_fmt[col] = df_fmt[col].apply(fmt)
         df_fmt.to_csv(PRED_DIR / "summary_concrete_examples__both_refs.csv", index=False)
+        print("\n✅ Concrete Examples saved!")
 
-        print("\n✅ Concrete Examples saved:")
-        print(f" - {PRED_DIR / 'summary_concrete_examples_numeric__both_refs.csv'}")
-        print(f" - {PRED_DIR / 'summary_concrete_examples__both_refs.csv'}")
-
-    # 2) Unique insights
     if all_unique_list:
         df_u_all = pd.concat(all_unique_list, axis=0, ignore_index=True)
         df_u_all.to_csv(PRED_DIR / "summary_unique_insights_numeric__both_refs.csv", index=False)
@@ -472,20 +535,14 @@ def main():
         for col in money_cols_u:
             df_u_fmt[col] = df_u_fmt[col].apply(fmt)
         df_u_fmt.to_csv(PRED_DIR / "summary_unique_insights__both_refs.csv", index=False)
+        print("✅ Unique Insights saved!")
 
-        print("\n✅ Unique Insights saved:")
-        print(f" - {PRED_DIR / 'summary_unique_insights_numeric__both_refs.csv'}")
-        print(f" - {PRED_DIR / 'summary_unique_insights__both_refs.csv'}")
-
-    # 3) Coverage summary
     if all_cov_list:
         df_cov_all = pd.concat(all_cov_list, axis=0, ignore_index=True)
         df_cov_all.to_csv(PRED_DIR / "summary_model_coverage__both_refs.csv", index=False)
+        print("✅ Coverage Summary saved!")
 
-        print("\n✅ Coverage Summary saved:")
-        print(f" - {PRED_DIR / 'summary_model_coverage__both_refs.csv'}")
-
-    print("\n✅ Done.")
+    print("\n🎉 Done.")
 
 if __name__ == "__main__":
     main()
